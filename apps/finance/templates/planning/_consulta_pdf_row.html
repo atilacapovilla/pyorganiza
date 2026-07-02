@@ -1,0 +1,40 @@
+{% for node in nodes %}
+{% with cat=node.category %}
+<tr>
+    <td style="padding-left: {{ level|add:1 }}em;">
+        <span class="color-dot-inner" style="background-color: {{ cat.color }};"></span>
+        {% if not node.is_leaf %}
+        <strong>{{ cat.name }}</strong>
+        {% else %}
+        {{ cat.name }}
+        {% endif %}
+    </td>
+    <td>
+        {% if node.is_leaf %}
+        <span class="type-badge {{ cat.category_type }}">{{ cat.get_category_type_display|upper }}</span>
+        {% endif %}
+    </td>
+    <td class="valor">{{ node.planned|floatformat:2 }}</td>
+    <td class="valor">{{ node.actual|floatformat:2 }}</td>
+    <td class="valor">
+        {% if node.percentage is not None %}
+        <span class="{% if node.status == 'success' %}status-sucesso{% elif node.status == 'warning' %}status-atencao{% elif node.status == 'danger' %}status-critico{% endif %}">
+            {{ node.percentage|floatformat:1 }}%
+        </span>
+        {% else %}
+        —
+        {% endif %}
+    </td>
+    <td class="valor {% if node.diff >= 0 %}credito{% else %}debito{% endif %}">
+        {% if node.diff != 0 %}
+        {% if node.diff > 0 %}+{% endif %}{{ node.diff|floatformat:2 }}
+        {% else %}
+        —
+        {% endif %}
+    </td>
+</tr>
+{% if node.children %}
+{% include "planning/_consulta_pdf_row.html" with nodes=node.children level=level|add:2 %}
+{% endif %}
+{% endwith %}
+{% endfor %}

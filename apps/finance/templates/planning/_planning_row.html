@@ -1,0 +1,39 @@
+{% for node in nodes %}
+{% with cat=node.category %}
+<tr>
+    <td style="padding-left: {{ level|add:1 }}em;">
+        <span class="d-inline-block rounded-circle me-1" style="width: 10px; height: 10px; background-color: {{ cat.color }};"></span>
+        {% if not node.is_leaf %}
+        <span class="fw-semibold">{{ cat.name }}</span>
+        {% else %}
+        <span class="text-secondary">{{ cat.name }}</span>
+        {% endif %}
+    </td>
+    <td>
+        {% if node.is_leaf %}
+        <span class="badge bg-opacity-10
+            {% if cat.category_type == 'receita' %}bg-success text-success
+            {% elif cat.category_type == 'despesa' %}bg-danger text-danger
+            {% else %}bg-info text-info{% endif %}">
+            {{ cat.get_category_type_display }}
+        </span>
+        {% endif %}
+    </td>
+    <td class="text-end">
+        {% if node.is_leaf %}
+        <input type="text"
+               name="value_{{ cat.id }}"
+               value="{% if node.value %}{{ node.value|floatformat:2 }}{% endif %}"
+               class="form-control text-end"
+               style="width: 200px; display: inline-block;"
+               placeholder="0,00">
+        {% else %}
+        <span class="text-muted small">—</span>
+        {% endif %}
+    </td>
+</tr>
+{% if node.children %}
+{% include "planning/_planning_row.html" with nodes=node.children level=level|add:2 %}
+{% endif %}
+{% endwith %}
+{% endfor %}

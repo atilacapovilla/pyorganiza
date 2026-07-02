@@ -1,0 +1,154 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}PyOrganiza - Dashboard Financeiro{% endblock title %}
+
+{% block content %}
+
+<div class="container-fluid py-4">
+    <div class="row justify-content-center">
+        <div class="col-xl-12 col-xxl-12">
+            <div class="d-flex flex-column flex-md-row align-items-md-center justify-content-between gap-3 mb-4">
+                <div class="d-flex align-items-center gap-3">
+                    <div class="bg-primary bg-opacity-10 rounded-circle d-flex align-items-center justify-content-center" style="width: 48px; height: 48px;">
+                        <i class="bi bi-graph-up-arrow text-primary fs-5"></i>
+                    </div>
+                    <div>
+                        <h1 class="h4 fw-bold mb-0">Dashboard Financeiro</h1>
+                        <p class="text-muted small mb-0">Resumo e indicadores financeiros</p>
+                    </div>
+                </div>
+                <small class="text-muted">Atualizado em {% now "SHORT_DATETIME_FORMAT" %}</small>
+            </div>
+            <div class="card mb-4">
+                <div class="card-header d-flex flex-wrap align-items-center justify-content-between gap-2">
+                    <div>
+                        <i class="bi bi-graph-up-arrow me-1"></i>
+                        Resumo de indicadores mensais
+                    </div>
+                    <form method="get" class="d-flex align-items-center gap-2">
+                        <select name="month" class="form-select form-select-sm" style="width: auto;">
+                            {% for m in months %}
+                            <option value="{{ m.0 }}" {% if m.0 == selected_month %}selected{% endif %}>{{ m.1 }}</option>
+                            {% endfor %}
+                        </select>
+                        <select name="year" class="form-select form-select-sm" style="width: auto;">
+                            {% for y in year_range %}
+                            <option value="{{ y }}" {% if y == selected_year %}selected{% endif %}>{{ y }}</option>
+                            {% endfor %}
+                        </select>
+                        <button type="submit" class="btn btn-sm btn-primary">Filtrar</button>
+                    </form>
+                </div>
+                <div class="card-body">
+                    {% include "dashboard/components/_finance_balance.html" %}
+                    {% include "dashboard/components/_finance_grafics_mounth.html" %}
+                </div>
+            </div>
+            
+            {% include "dashboard/components/_finance_grafics_year.html" %}
+            {% include "dashboard/components/_finance_balance_pendents.html" %}
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<script>
+    function hexToRgba(hex, alpha) {
+        var r = parseInt(hex.slice(1, 3), 16);
+        var g = parseInt(hex.slice(3, 5), 16);
+        var b = parseInt(hex.slice(5, 7), 16);
+        return 'rgba(' + r + ', ' + g + ', ' + b + ', ' + alpha + ')';
+    }
+
+    var ctx = document.getElementById("expenses-essential-month");
+    if (ctx) {
+        var labels_essential = JSON.parse('{{ labels_essential|safe }}');
+        var data_essential = JSON.parse('{{ data_essential|safe }}');
+        var colors_essential = JSON.parse('{{ colors_essential|safe }}');
+        new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: labels_essential,
+                datasets: [{
+                    label: 'Despesas Essenciais',
+                    data: data_essential,
+                    backgroundColor: colors_essential.map(function(c) { return hexToRgba(c, 0.5); }),
+                    borderColor: colors_essential.map(function(c) { return hexToRgba(c, 1); }),
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                responsive: true,
+                indexAxis: 'y',
+                plugins: { legend: { labels: { font: { size: 12 } } } },
+                layout: { padding: 0 }
+            }
+        });
+    }
+
+    var ctx2 = document.getElementById("expenses-non-essential-month");
+    if (ctx2) {
+        var labels_non_essential = JSON.parse('{{ labels_non_essential|safe }}');
+        var data_non_essential = JSON.parse('{{ data_non_essential|safe }}');
+        var colors_non_essential = JSON.parse('{{ colors_non_essential|safe }}');
+        new Chart(ctx2, {
+            type: 'bar',
+            data: {
+                labels: labels_non_essential,
+                datasets: [{
+                    label: 'Despesas Não Essenciais',
+                    data: data_non_essential,
+                    backgroundColor: colors_non_essential.map(function(c) { return hexToRgba(c, 0.5); }),
+                    borderColor: colors_non_essential.map(function(c) { return hexToRgba(c, 1); }),
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                responsive: true,
+                indexAxis: 'y',
+                plugins: { legend: { labels: { font: { size: 12 } } } },
+                layout: { padding: 0 }
+            }
+        });
+    }
+
+    var ctx3 = document.getElementById("expenses-incomes-year");
+    if (ctx3) {
+        var labels_year = JSON.parse('{{ labels_year|safe }}');
+        var data_expenses_year = JSON.parse('{{ data_expenses_year|safe }}');
+        var data_incomes_year = JSON.parse('{{ data_incomes_year|safe }}');
+        new Chart(ctx3, {
+            type: 'scatter',
+            data: {
+                labels: labels_year,
+                datasets: [
+                    {
+                        type: 'line',
+                        label: 'Receitas',
+                        data: data_incomes_year,
+                        borderColor: 'rgba(54, 162, 235, 1)',
+                        backgroundColor: 'rgba(54, 162, 235, 0.5)',
+                        borderWidth: 1
+                    },
+                    {
+                        type: 'bar',
+                        label: 'Despesas',
+                        data: data_expenses_year,
+                        borderColor: 'rgba(255,99,132,1)',
+                        backgroundColor: 'rgba(255, 99, 132, 0.5)',
+                        borderWidth: 1
+                    }
+                ]
+            },
+            options: {
+                responsive: true,
+                plugins: { legend: { labels: { font: { size: 12 } } } },
+                layout: { padding: 0 }
+            }
+        });
+    }
+</script>
+
+{% endblock content %}

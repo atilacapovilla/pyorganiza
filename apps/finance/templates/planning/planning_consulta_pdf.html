@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <title>Relatório de Planejamento</title>
+</head>
+<body>
+
+<div class="header">
+    <h1>Relatório de Planejamento</h1>
+    <p class="small">PyOrganiza - Sistema de Gestão Financeira</p>
+</div>
+
+<div class="info">
+    <table class="info-table">
+        <tr>
+            <td class="label">Período:</td>
+            <td>{{ selected_month_name }}/{{ selected_year }}</td>
+            <td class="label">Emissão:</td>
+            <td>{{ data_emissao|date:"d/m/Y" }}</td>
+        </tr>
+        <tr>
+            <td class="label">Usuário:</td>
+            <td colspan="3">{{ usuario }}</td>
+        </tr>
+    </table>
+</div>
+
+<table class="data-table">
+    <thead>
+        <tr>
+            <th>Categoria</th>
+            <th>Tipo</th>
+            <th class="valor">Planejado (R$)</th>
+            <th class="valor">Realizado (R$)</th>
+            <th class="valor">% Realizado</th>
+            <th class="valor">Diferença (R$)</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% include "planning/_consulta_pdf_row.html" with nodes=tree level=0 %}
+    </tbody>
+    <tfoot>
+        <tr>
+            <td colspan="2">Receitas</td>
+            <td class="valor credito">{{ totals.receita.planned|floatformat:2 }}</td>
+            <td class="valor credito">{{ totals.receita.actual|floatformat:2 }}</td>
+            <td class="valor">
+                {% if totals.receita.percentage is not None %}
+                <span class="{% if totals.receita.status == 'success' %}status-sucesso{% elif totals.receita.status == 'warning' %}status-atencao{% else %}status-critico{% endif %}">
+                    {{ totals.receita.percentage|floatformat:1 }}%
+                </span>
+                {% else %}—{% endif %}
+            </td>
+            <td class="valor {% if totals.receita.diff >= 0 %}credito{% else %}debito{% endif %}">
+                {% if totals.receita.diff >= 0 %}+{% endif %}{{ totals.receita.diff|floatformat:2 }}
+            </td>
+        </tr>
+        <tr>
+            <td colspan="2">Despesas</td>
+            <td class="valor debito">{{ totals.despesa.planned|floatformat:2 }}</td>
+            <td class="valor debito">{{ totals.despesa.actual|floatformat:2 }}</td>
+            <td class="valor">
+                {% if totals.despesa.percentage is not None %}
+                <span class="{% if totals.despesa.status == 'success' %}status-sucesso{% elif totals.despesa.status == 'warning' %}status-atencao{% else %}status-critico{% endif %}">
+                    {{ totals.despesa.percentage|floatformat:1 }}%
+                </span>
+                {% else %}—{% endif %}
+            </td>
+            <td class="valor {% if totals.despesa.diff >= 0 %}credito{% else %}debito{% endif %}">
+                {% if totals.despesa.diff >= 0 %}+{% endif %}{{ totals.despesa.diff|floatformat:2 }}
+            </td>
+        </tr>
+        <tr>
+            <td colspan="2">Investimentos</td>
+            <td class="valor">{{ totals.investimento.planned|floatformat:2 }}</td>
+            <td class="valor">{{ totals.investimento.actual|floatformat:2 }}</td>
+            <td class="valor">
+                {% if totals.investimento.percentage is not None %}
+                <span class="{% if totals.investimento.status == 'success' %}status-sucesso{% elif totals.investimento.status == 'warning' %}status-atencao{% else %}status-critico{% endif %}">
+                    {{ totals.investimento.percentage|floatformat:1 }}%
+                </span>
+                {% else %}—{% endif %}
+            </td>
+            <td class="valor">
+                {% if totals.investimento.diff >= 0 %}+{% endif %}{{ totals.investimento.diff|floatformat:2 }}
+            </td>
+        </tr>
+    </tfoot>
+</table>
+
+<div class="footer">
+    <p class="small">Documento gerado em {{ data_emissao|date:"d/m/Y" }}</p>
+</div>
+
+</body>
+</html>

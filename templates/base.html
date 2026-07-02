@@ -1,0 +1,265 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Sistema Financeiro</title>
+  <link rel="stylesheet" href="{% static 'css/bootstrap.css' %}" />
+  <link rel="stylesheet" href="{% static 'css/bootstrap-icons.css' %}">
+  <link rel="stylesheet" href="{% static 'css/custom.css' %}">
+
+  {% block extra_css %}{% endblock %}
+    
+</head>
+<body>
+    <!-- Overlay para Mobile -->
+    <div class="sidebar-overlay" id="sidebarOverlay"></div>
+
+    <!-- Layout Container -->
+    <div class="layout-container">
+        {% include "partials/sidebar.html" %} 
+
+        <!-- Main Area -->
+        <div class="main-area">
+            {% include "partials/navbar.html" %} 
+
+            <!-- Main Content -->
+            <main class="main-content" id="mainContent">
+                {% include 'components/_mensagens.html' %}
+
+                {% block content %}
+                {% endblock content %}
+            </main>
+        </div>
+    </div>
+
+    <script src="{% static 'js/bootstrap.bundle.min.js' %}"></script>
+        
+    <script>
+        // Elementos
+        const sidebar = document.getElementById('sidebar');
+        const navbar = document.getElementById('navbar');
+        const mainContent = document.getElementById('mainContent');
+        const sidebarToggle = document.getElementById('sidebarToggle');
+        const sidebarOverlay = document.getElementById('sidebarOverlay');
+        const themeToggle = document.getElementById('themeToggle');
+        const menuItems = document.querySelectorAll('.menu-item');
+        const userMenu = document.getElementById('userMenu');
+        const userDropdown = document.getElementById('userDropdown');
+
+        // Estado
+        let isMobile = window.innerWidth <= 768;
+        let sidebarCollapsed = false;
+
+        // Toggle Sidebar
+        sidebarToggle.addEventListener('click', () => {
+            if (isMobile) {
+                // Mobile: mostrar/ocultar sidebar
+                sidebar.classList.toggle('mobile-visible');
+                sidebarOverlay.classList.toggle('active');
+            } else {
+                // Desktop: colapsar/expandir sidebar
+                sidebarCollapsed = !sidebarCollapsed;
+                sidebar.classList.toggle('collapsed');
+                navbar.classList.toggle('sidebar-collapsed');
+                mainContent.classList.toggle('sidebar-collapsed');
+            }
+        });
+
+        // Fechar sidebar ao clicar no overlay (mobile)
+        sidebarOverlay.addEventListener('click', () => {
+            sidebar.classList.remove('mobile-visible');
+            sidebarOverlay.classList.remove('active');
+        });
+
+        // Theme Toggle
+        let currentTheme = localStorage.getItem('theme') || 'light';
+        document.documentElement.setAttribute('data-theme', currentTheme);
+        updateThemeButton();
+
+        themeToggle.addEventListener('click', () => {
+            currentTheme = currentTheme === 'light' ? 'dark' : 'light';
+            document.documentElement.setAttribute('data-theme', currentTheme);
+            localStorage.setItem('theme', currentTheme);
+            updateThemeButton();
+        });
+
+        function updateThemeButton() {
+            const icon = themeToggle.querySelector('i');
+            const text = themeToggle.querySelector('.theme-text');
+            
+            if (currentTheme === 'dark') {
+                icon.className = 'bi bi-sun';
+                text.textContent = 'Light';
+            } else {
+                icon.className = 'bi bi-moon';
+                text.textContent = 'Dark';
+            }
+        }
+
+        // Menu Items - Active State
+        menuItems.forEach(item => {
+            item.addEventListener('click', (e) => {
+                if (item.classList.contains('has-submenu')) {
+                    e.preventDefault();
+
+                    const submenuId = item.getAttribute('data-submenu');
+                    const submenu = document.getElementById(`submenu-${submenuId}`);
+
+                    item.classList.toggle('open');
+                    submenu.classList.toggle('open');
+
+                    document.querySelectorAll('.menu-item.has-submenu').forEach(otherItem => {
+                        if (otherItem !== item && otherItem.classList.contains('open')) {
+                            otherItem.classList.remove('open');
+                            const otherSubmenuId = otherItem.getAttribute('data-submenu');
+                            document.getElementById(`submenu-${otherSubmenuId}`).classList.remove('open');
+                        }
+                    });
+                } else {
+                    // NÃO bloqueia a navegação aqui
+
+                    menuItems.forEach(i => {
+                        if (!i.classList.contains('has-submenu')) {
+                            i.classList.remove('active');
+                        }
+                    });
+
+                    item.classList.add('active');
+
+                    if (isMobile) {
+                        sidebar.classList.remove('mobile-visible');
+                        sidebarOverlay.classList.remove('active');
+                    }
+                }
+            });
+        }); 
+
+        // User Menu Dropdown
+        userMenu.addEventListener('click', (e) => {
+            e.stopPropagation();
+            userMenu.classList.toggle('open');
+            userDropdown.classList.toggle('open');
+        });
+
+        // Fechar dropdown ao clicar nos itens
+        document.querySelectorAll('.user-dropdown-item').forEach(item => {
+            item.addEventListener('click', (e) => {
+                if (item.classList.contains('logout')) {
+                    e.preventDefault();
+                    if (confirm('Tem certeza que deseja sair?')) {
+                        alert('Desconectando...');
+                        // Aqui você implementaria o logout real
+                        // window.location.href = '/login';
+                    }
+                }
+                userMenu.classList.remove('open');
+                userDropdown.classList.remove('open');
+            });
+        });
+
+        // Fechar dropdown ao clicar fora
+        document.addEventListener('click', (e) => {
+            if (!userMenu.contains(e.target)) {
+                userMenu.classList.remove('open');
+                userDropdown.classList.remove('open');
+            }
+        });
+
+        // Submenu Items - Active State
+        document.querySelectorAll('.submenu-item').forEach(subItem => {
+            subItem.addEventListener('click', (e) => {
+                
+                // Remove active de todos os subitens
+                document.querySelectorAll('.submenu-item').forEach(i => i.classList.remove('active'));
+                
+                // Remove active dos itens principais
+                menuItems.forEach(i => {
+                    if (!i.classList.contains('has-submenu')) {
+                        i.classList.remove('active');
+                    }
+                });
+                
+                // Adiciona active no subitem clicado
+                subItem.classList.add('active');
+                
+                // Fecha sidebar no mobile
+                if (isMobile) {
+                    sidebar.classList.remove('mobile-visible');
+                    sidebarOverlay.classList.remove('active');
+                }
+            });
+        });
+
+        // Responsive
+        window.addEventListener('resize', () => {
+            const wasMobile = isMobile;
+            isMobile = window.innerWidth <= 768;
+            
+            if (wasMobile !== isMobile) {
+                // Mudou de mobile para desktop ou vice-versa
+                if (isMobile) {
+                    // Entrou no mobile
+                    sidebar.classList.remove('collapsed');
+                    sidebar.classList.add('mobile-hidden');
+                    navbar.classList.add('sidebar-mobile-hidden');
+                    mainContent.classList.add('sidebar-mobile-hidden');
+                    sidebarCollapsed = false;
+                } else {
+                    // Entrou no desktop
+                    sidebar.classList.remove('mobile-hidden', 'mobile-visible');
+                    navbar.classList.remove('sidebar-mobile-hidden');
+                    mainContent.classList.remove('sidebar-mobile-hidden');
+                    sidebarOverlay.classList.remove('active');
+                }
+            }
+        });
+
+        // Fechar sidebar ao clicar fora (mobile)
+        document.addEventListener('click', (e) => {
+            if (isMobile && 
+                sidebar.classList.contains('mobile-visible') &&
+                !sidebar.contains(e.target) && 
+                e.target !== sidebarToggle &&
+                !sidebarToggle.contains(e.target)) {
+                sidebar.classList.remove('mobile-visible');
+                sidebarOverlay.classList.remove('active');
+            }
+        });
+
+        // Atalhos de teclado
+        document.addEventListener('keydown', (e) => {
+            // Ctrl + B ou Cmd + B para toggle sidebar
+            if ((e.ctrlKey || e.metaKey) && e.key === 'b') {
+                e.preventDefault();
+                sidebarToggle.click();
+            }
+            
+            // Ctrl + D ou Cmd + D para toggle theme
+            if ((e.ctrlKey || e.metaKey) && e.key === 'd') {
+                e.preventDefault();
+                themeToggle.click();
+            }
+            
+            // ESC para fechar sidebar no mobile
+            if (e.key === 'Escape' && isMobile && sidebar.classList.contains('mobile-visible')) {
+                sidebar.classList.remove('mobile-visible');
+                sidebarOverlay.classList.remove('active');
+            }
+        });
+
+        // Inicialização
+        if (isMobile) {
+            sidebar.classList.add('mobile-hidden');
+            navbar.classList.add('sidebar-mobile-hidden');
+            mainContent.classList.add('sidebar-mobile-hidden');
+        }
+
+        // Animação suave ao carregar
+        window.addEventListener('load', () => {
+            document.body.style.opacity = '1';
+        });
+    </script>
+</body>
+</html>

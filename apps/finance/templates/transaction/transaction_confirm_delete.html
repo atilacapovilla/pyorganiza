@@ -1,0 +1,85 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block title %}PyOrganiza - Exclusão de Transação{% endblock title %}
+
+{% block content %}
+{% load crispy_forms_tags %}
+
+<div class="container-fluid py-4">
+    <div class="row justify-content-center">
+        <div class="col-md-8 col-lg-6 col-xl-5">
+
+            <div class="card border-0 shadow-sm">
+                <div class="card-header border-bottom-0 pt-4 pb-0 px-4 text-center">
+                    <div class="bg-danger bg-opacity-10 rounded-circle d-inline-flex align-items-center justify-content-center mb-3" style="width: 72px; height: 72px;">
+                        <i class="bi bi-exclamation-triangle-fill text-danger fs-2"></i>
+                    </div>
+                    <h1 class="h4 fw-bold text-danger mb-2">Confirmar Exclusão</h1>
+                    <p class="text-muted small mb-0">
+                        Esta ação é <span class="fw-semibold text-danger">irreversível</span>.
+                    </p>
+                </div>
+
+                <div class="card-body px-4 pt-4 pb-4">
+                    <div class="rounded-3 p-4 mb-4">
+                        <h6 class="text-uppercase text-muted small fw-bold ls-1 mb-3 d-flex align-items-center gap-2">
+                            <i class="bi bi-currency-exchange"></i>
+                            Dados da Transação
+                        </h6>
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <label class="form-label text-muted small fw-semibold text-uppercase ls-1 mb-1">Tipo</label>
+                                <div class="form-control bg-white border-0 fw-bold">{{ transaction.get_type_display }}</div>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label text-muted small fw-semibold text-uppercase ls-1 mb-1">Data</label>
+                                <div class="form-control bg-white border-0">{{ transaction.transaction_date|date:"d/m/Y" }}</div>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label text-muted small fw-semibold text-uppercase ls-1 mb-1">Vencimento</label>
+                                <div class="form-control bg-white border-0">{{ transaction.due_date|date:"d/m/Y" }}</div>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label text-muted small fw-semibold text-uppercase ls-1 mb-1">Conta</label>
+                                <div class="form-control bg-white border-0">{{ transaction.account }}</div>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label text-muted small fw-semibold text-uppercase ls-1 mb-1">Categoria</label>
+                                <div class="form-control bg-white border-0">{{ transaction.category }}</div>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label text-muted small fw-semibold text-uppercase ls-1 mb-1">Valor</label>
+                                <div class="form-control bg-white border-0 fw-bold text-danger">R$ {{ transaction.transaction_value }}</div>
+                            </div>
+                            <div class="col-12">
+                                <label class="form-label text-muted small fw-semibold text-uppercase ls-1 mb-1">Descrição</label>
+                                <div class="form-control bg-white border-0">{{ transaction.description|default:"-" }}</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <form method="post">
+                        {% csrf_token %}
+                        <div class="row g-3">
+                            <div class="col-md-6 order-md-2">
+                                <button type="submit" class="btn btn-danger w-100 d-inline-flex align-items-center justify-content-center gap-2 py-2">
+                                    <i class="bi bi-trash-fill"></i>
+                                    <span>Confirmar Exclusão</span>
+                                </button>
+                            </div>
+                            <div class="col-md-6 order-md-1">
+                                <a href="{% url 'transactions' %}" class="btn btn-outline-secondary w-100 d-inline-flex align-items-center justify-content-center gap-2 py-2">
+                                    <i class="bi bi-arrow-left"></i>
+                                    <span>Cancelar e Voltar</span>
+                                </a>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+{% endblock %}

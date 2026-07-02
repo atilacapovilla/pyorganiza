@@ -1,0 +1,45 @@
+{% for node in nodes %}
+  {% with category=node.category %}
+  <tr>
+    <td style="padding-left: {{ level }}em;">
+      <span class="d-inline-block rounded-circle me-1" style="width: 10px; height: 10px; background-color: {{ category.color }};"></span>
+      {% if node.children %}
+        <span class="text-primary">
+          <i class="bi bi-folder2-open"></i>
+          {{ category.name }}
+        </span>
+      {% else %}
+        <span class="text-secondary">
+          <i class="bi bi-file-text"></i>
+          {{ category.name }}
+        </span>
+      {% endif %}
+    </td>
+
+    <td>
+      <span class="d-inline-block rounded-circle" style="width: 16px; height: 16px; background-color: {{ category.color }}; border: 1px solid rgba(0,0,0,0.1);" title="{{ category.get_color_display }}"></span>
+    </td>
+
+    {% if not node.children %}
+      <td>{{ category.get_category_type_display }}</td>
+      <td>{{ category.essential|yesno:"Essencial,Não essencial" }}</td>
+      <td>{{ category.get_metod_503020_display }}</td>
+    {% else %}
+      <td colspan="3" class="text-muted"></td>
+    {% endif %}
+
+    <td class="table-col-acoes">
+      <a href="{% url 'category-update' category.id %}" class="btn btn-outline-primary btn-sm me-1" title="Editar">
+        <i class="bi bi-pencil-square"></i>
+      </a>
+      <a href="{% url 'category-delete' category.id %}" class="btn btn-outline-danger btn-sm" title="Excluir">
+        <i class="bi bi-trash"></i>
+      </a>
+    </td>
+  </tr>
+
+  {% if node.children %}
+    {% include "category/_category_row.html" with nodes=node.children level=level|add:2 %}
+  {% endif %}
+  {% endwith %}
+{% endfor %}

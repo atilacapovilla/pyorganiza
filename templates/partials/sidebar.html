@@ -1,0 +1,111 @@
+<!-- Sidebar -->
+<aside class="sidebar" id="sidebar">
+    <!-- Logo -->
+    <div class="sidebar-logo">
+        <div class="logo">
+            <i class="bi bi-boxes me-2 logo-icon logo-aqua"></i>
+            <span class="logo-text">
+                <span class="logo-aqua">Py</span>
+                <span class="text-white">Organiza</span>
+            </span>
+        </div>
+    </div>
+
+    <!-- Menu -->
+    <nav class="sidebar-menu">
+        <!-- Principal -->
+        <div class="menu-section">
+            <div class="menu-title">Principal</div>
+            <a href="{% url 'principal' %}" class="menu-item">
+                <i class="bi bi-house menu-icon"></i>
+                <span class="menu-text">Dashboard</span>
+            </a>
+        </div>
+        <!-- Anotações-->
+        <div class="menu-section">
+            <div class="menu-title">Anotações</div>
+            <a href="{% url 'subjects' %}" class="menu-item">
+                <i class="bi bi-tags menu-icon"></i>
+                <span class="menu-text">Assuntos</span>
+            </a>
+            <a href="{% url 'courses' %}" class="menu-item">
+                <i class="bi bi-journal-richtext menu-icon"></i>
+                <span class="menu-text">Cursos
+            </a>
+            <a href="{% url 'note-list' %}" class="menu-item">
+                <i class="bi bi-pencil-square menu-icon"></i>
+                <span class="menu-text">Anotações
+            </a>
+        </div>
+
+        <!-- Financeiro -->
+        <div class="menu-section">
+            <div class="menu-title">Financeiro</div>
+            <a href="{% url 'dashboard' %}" class="menu-item">
+                <i class="bi bi-graph-up menu-icon"></i>
+                <span class="menu-text">Dashboard Financeiro</span>
+            </a>
+            <!-- Cadastros-->
+            <a href="#" class="menu-item has-submenu" data-submenu="financeiroCadastros">
+                <i class="bi bi-pencil-square menu-icon"></i>
+                <span class="menu-text">Cadastros</span>
+                <i class="bi bi-chevron-down menu-arrow"></i>
+            </a>
+            <div class="submenu" id="submenu-financeiroCadastros">
+                <a href="{% url 'categories' %}" class="submenu-item">
+                    <span>Categorias</span>
+                </a>
+                <a href="{% url 'accounts' %}" class="submenu-item">
+                    <span>Contas</span>
+                </a>
+            </div>
+            <!-- Transações -->
+            <a href="#" class="menu-item has-submenu" data-submenu="transacoes">
+                <i class="bi bi-database-add menu-icon"></i>
+                <span class="menu-text">Transações</span>
+                <i class="bi bi-chevron-down menu-arrow"></i>
+            </a>
+            <div class="submenu" id="submenu-transacoes">
+                <a href="{% url 'transactions' %}" class="submenu-item">
+                    <span>Movimentos</span>
+                </a>
+            </div>
+            <!-- Relatório -->
+            <a href="#" class="menu-item has-submenu" data-submenu="relatorios">
+                <i class="bi bi-printer menu-icon"></i>
+                <span class="menu-text">Relatórios</span>
+                <i class="bi bi-chevron-down menu-arrow"></i>
+            </a>
+            <div class="submenu" id="submenu-relatorios">
+                <a href="{% url 'extrato' %}" class="submenu-item">
+                    <span>Mensal</span>
+                </a>
+                <a href="{% url 'balancete' %}" class="submenu-item">
+                    <span>Grupo e categoria</span>
+                </a>
+            </div>
+            <!-- Planejamento -->
+            <a href="#" class="menu-item has-submenu" data-submenu="planejamento">
+                <i class="bi bi-clipboard2-data menu-icon"></i>
+                <span class="menu-text">Planejamento</span>
+                <i class="bi bi-chevron-down menu-arrow"></i>
+            </a>
+            <div class="submenu" id="submenu-planejamento">
+                <a href="{% url 'planning-definir' %}" class="submenu-item">
+                    <span>Definir</span>
+                </a>
+                <a href="{% url 'planning-consulta' %}" class="submenu-item">
+                    <span>Visualizar</span>
+                </a>
+            </div>
+        </div>
+
+    </nav>
+
+    <!-- Footer -->
+    <div class="sidebar-footer">
+        <div class="sidebar-footer-text">
+            © 2026 PyOrganiza v1.0-Beta
+        </div>
+    </div>
+</aside>

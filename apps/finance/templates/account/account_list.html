@@ -1,0 +1,88 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}PyOrganiza - Contas{% endblock title %}
+
+{% block content %}
+
+<div class="container-fluid py-4">
+    <div class="row justify-content-center">
+        <div class="col-xl-12 col-xxl-12">
+
+            <!-- Header -->
+            <div class="d-flex flex-column flex-md-row align-items-md-center justify-content-between gap-3 mb-4">
+                <div class="d-flex align-items-center gap-3">
+                    <div class="bg-primary bg-opacity-10 rounded-circle d-flex align-items-center justify-content-center" style="width: 48px; height: 48px;">
+                        <i class="bi bi-wallet2 text-primary fs-5"></i>
+                    </div>
+                    <div>
+                        <h1 class="h4 fw-bold mb-0">Contas</h1>
+                        <p class="text-muted small mb-0">Gerencie suas contas bancárias e saldos</p>
+                    </div>
+                </div>
+                <a href="{% url 'account-create' %}" class="btn btn-success d-inline-flex align-items-center gap-2 px-4 py-2 rounded-3">
+                    <i class="bi bi-plus-lg"></i>
+                    <span>Nova Conta</span>
+                </a>
+            </div>
+
+            <!-- Tabela -->
+            <div class="card border-0 shadow-sm">
+                <div class="card-body pt-3 pb-4">
+                    {% if accounts %}
+                    <div class="table-responsive">
+                        <table class="table table-hover align-middle mb-0">
+                            <thead>
+                                <tr>
+                                    <th class="text-muted small fw-semibold text-uppercase ls-1">Nome</th>
+                                    <th class="text-muted small fw-semibold text-uppercase ls-1">Tipo</th>
+                                    <th class="text-muted small fw-semibold text-uppercase ls-1">Saldo Inicial</th>
+                                    <th class="text-muted small fw-semibold text-uppercase ls-1">Saldo Atual</th>
+                                    <th class="text-muted small fw-semibold text-uppercase ls-1 text-end">Ações</th>
+                                </tr>
+                            </thead>
+                            <tbody class="border-top-0">
+                                {% for account in accounts %}
+                                <tr>
+                                    <td class="fw-medium">
+                                        {% if account.logo %}
+                                        <img src="{{ account.logo.url }}" alt="" class="me-2" style="width: 24px; height: 24px;">
+                                        {% endif %}
+                                        {{ account.name }}
+                                    </td>
+                                    <td><span class="badge bg-info bg-opacity-10 text-info">{{ account.get_type_display }}</span></td>
+                                    <td>R$ {{ account.opening_balance }}</td>
+                                    <td class="fw-semibold {% if account.current_balance >= 0 %}text-success{% else %}text-danger{% endif %}">
+                                        R$ {{ account.current_balance }}
+                                    </td>
+                                    <td class="text-end">
+                                        <a href="{% url 'account-update' account.id %}" class="btn btn-sm btn-outline-primary" title="Editar">
+                                            <i class="bi bi-pencil-square"></i>
+                                        </a>
+                                        <a href="{% url 'account-delete' account.id %}" class="btn btn-sm btn-outline-danger" title="Excluir">
+                                            <i class="bi bi-trash"></i>
+                                        </a>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    {% else %}
+                    <div class="text-center py-5">
+                        <div class="bg-light rounded-circle d-inline-flex align-items-center justify-content-center mb-3" style="width: 64px; height: 64px;">
+                            <i class="bi bi-wallet2 text-muted fs-2"></i>
+                        </div>
+                        <p class="text-muted mb-0">Nenhuma conta cadastrada</p>
+                        <a href="{% url 'account-create' %}" class="btn btn-success mt-3">
+                            <i class="bi bi-plus-lg me-1"></i> Cadastrar primeira conta
+                        </a>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock content %}

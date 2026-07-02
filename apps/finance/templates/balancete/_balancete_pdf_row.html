@@ -1,0 +1,30 @@
+{% for node in nodes %}
+{% with cat=node.category %}
+<tr>
+    <td style="padding-left: {{ level|add:1 }}em;">
+        <span class="color-dot-inner" style="background-color: {{ cat.color }};"></span>
+        {% if node.children %}
+        <strong>{{ cat.name }}</strong>
+        {% else %}
+        {{ cat.name }}
+        {% endif %}
+    </td>
+    <td>
+        {% if not node.children %}
+        <span class="type-badge {{ cat.category_type }}">
+            {{ cat.get_category_type_display|upper }}
+        </span>
+        {% endif %}
+    </td>
+    <td class="valor {% if node.prev_total < 0 %}debito{% else %}credito{% endif %}">
+        {% if node.prev_total != 0 %}{{ node.prev_total|floatformat:2 }}{% endif %}
+    </td>
+    <td class="valor {% if node.curr_total < 0 %}debito{% else %}credito{% endif %}">
+        {% if node.curr_total != 0 %}{{ node.curr_total|floatformat:2 }}{% endif %}
+    </td>
+</tr>
+{% if node.children %}
+{% include "balancete/_balancete_pdf_row.html" with nodes=node.children level=level|add:2 %}
+{% endif %}
+{% endwith %}
+{% endfor %}

@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <title>Extrato Financeiro</title>
+</head>
+<body>
+
+<div class="header">
+    <h1>Extrato Financeiro</h1>
+    <p class="small">PyOrganiza - Sistema de Gestão Financeira</p>
+</div>
+
+<div class="info">
+    <table class="info-table">
+        <tr>
+            <td class="label">Período:</td>
+            <td>{{ start_date|date:"d/m/Y" }} a {{ end_date|date:"d/m/Y" }}</td>
+            <td class="label">Conta:</td>
+            <td>{{ account_nome }}</td>
+        </tr>
+        <tr>
+            <td class="label">Status:</td>
+            <td>{{ status_label }}</td>
+            <td class="label">Emissão:</td>
+            <td>{{ data_emissao|date:"d/m/Y" }}</td>
+        </tr>
+    </table>
+</div>
+
+<table class="data-table">
+    <thead>
+        <tr>
+            <th>Data</th>
+            <th>Vencimento</th>
+            <th>Conta</th>
+            <th>Descrição</th>
+            <th>Categoria</th>
+            <th class="valor">Débito</th>
+            <th class="valor">Crédito</th>
+            <th class="valor">Saldo</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for row in extrato_rows %}
+        <tr>
+            <td>{{ row.transaction.transaction_date|date:"d/m/Y" }}</td>
+            <td>{{ row.transaction.due_date|date:"d/m/Y" }}</td>
+            <td>{{ row.transaction.account }}</td>
+            <td>{{ row.transaction.description|default:"-" }}</td>
+            <td>{{ row.transaction.category }}</td>
+            {% if row.transaction.type == "D" %}
+            <td class="valor debito">{{ row.transaction.transaction_value|floatformat:2 }}</td>
+            <td class="valor"></td>
+            {% else %}
+            <td class="valor"></td>
+            <td class="valor credito">{{ row.transaction.transaction_value|floatformat:2 }}</td>
+            {% endif %}
+            <td class="valor {% if row.running_balance < 0 %}debito{% else %}credito{% endif %}">
+                {{ row.running_balance|floatformat:2 }}
+            </td>
+        </tr>
+        {% endfor %}
+    </tbody>
+    <tfoot>
+        <tr>
+            <th colspan="5">Totais</th>
+            <th class="valor debito">{{ total_debitos|floatformat:2 }}</th>
+            <th class="valor credito">{{ total_creditos|floatformat:2 }}</th>
+            <th class="valor {% if saldo_final < 0 %}debito{% else %}credito{% endif %}">
+                {{ saldo_final|floatformat:2 }}
+            </th>
+        </tr>
+    </tfoot>
+</table>
+
+<div class="footer">
+    <p class="small">Documento gerado em {{ data_emissao|date:"d/m/Y" }}</p>
+</div>
+
+</body>
+</html>

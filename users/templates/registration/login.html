@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+{% load static %}
+{% load crispy_forms_tags %}
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PyOrganiza - Login</title>
+    <link rel="stylesheet" href="{% static 'css/bootstrap.css' %}" />
+    <link rel="stylesheet" href="{% static 'css/bootstrap-icons.css' %}">
+    <link rel="stylesheet" href="{% static 'css/login.css' %}" />
+</head>
+<body class="d-flex align-items-center" style="min-height: 100vh;" data-bs-theme="dark">
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-md-5 col-lg-4">
+
+                <!-- Logo -->
+                <div class="text-center mb-4">
+                    <i class="bi bi-boxes logo-aqua" style="font-size: 3rem;"></i>
+                    <div style="font-size: 1.75rem; font-weight: 700;">
+                        <span class="logo-aqua">Py</span><span>Organiza</span>
+                    </div>
+                </div>
+
+                <!-- Card -->
+                <div class="card shadow-sm border-0">
+                    <div class="card-body p-4">
+                        <h4 class="card-title text-center mb-1">Bem-vindo de volta</h4>
+                        <p class="text-muted text-center small mb-4">Faça login para acessar sua conta</p>
+
+                        <form method="post" novalidate autocomplete="off">
+                            {% csrf_token %}
+
+                            {% for f in form %}
+                                <div class="mb-3">{{ f|as_crispy_field }}</div>
+                            {% endfor %}
+
+                            <button class="btn btn-primary w-100 mb-3" type="submit">
+                                <i class="bi bi-box-arrow-in-right me-2"></i>Entrar
+                            </button>
+
+                            <hr>
+                            <div class="text-center">
+                                <div class="mb-2">
+                                    <a href="{% url 'password-reset' %}" class="text-decoration-none small">
+                                        Esqueceu sua senha?
+                                    </a>
+                                </div>
+                                <div>
+                                    <span class="text-muted small">Não tem uma conta?</span>
+                                    <a href="{% url 'register' %}" class="fw-semibold text-decoration-none small">
+                                        Registre-se
+                                    </a>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+
+                <p class="text-center text-muted small mt-4 mb-0">© 2026 PyOrganiza. Todos os direitos reservados.</p>
+            </div>
+        </div>
+    </div>
+    <script src="{% static 'js/bootstrap.bundle.min.js' %}"></script>
+</body>
+</html>

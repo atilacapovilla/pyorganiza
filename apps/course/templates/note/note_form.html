@@ -1,0 +1,192 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}
+SGP - {% if note %}Alteração de {% else %}Nova {% endif %} Anotação
+{% endblock title %}
+
+{% block content %}
+{% load crispy_forms_tags %}
+
+<div class="container-fluid py-4">
+    <div class="row justify-content-center">
+        <div class="col-xl-10 col-xxl-9">
+
+            <!-- Header -->
+            <div class="d-flex flex-column flex-md-row align-items-md-center justify-content-between gap-3 mb-4">
+                <div class="d-flex align-items-center gap-3">
+                    <div class="bg-primary bg-opacity-10 rounded-circle d-flex align-items-center justify-content-center" style="width: 48px; height: 48px;">
+                        <i class="bi bi-journal-text text-primary fs-5"></i>
+                    </div>
+                    <div>
+                        <h1 class="h4 fw-bold mb-0">
+                            {% if note %}Alteração de {% else %}Nova {% endif %} Anotação
+                        </h1>
+                        <p class="text-muted mb-0">
+                            Curso: <span class="fw-semibold">{{ note.course.title }}</span>
+                        </p>
+                    </div>
+                </div>
+                <a href="{% url 'note-list' %}"
+                    class="btn btn-outline-secondary d-inline-flex align-items-center gap-2 px-4 py-2 rounded-3">
+                    <i class="bi bi-arrow-left"></i>
+                    <span>Voltar</span>
+                </a>
+            </div>
+
+            <!-- Card do Formulário -->
+            <div class="card border-0 shadow-sm">
+                <div class="card-body px-4 pt-4 pb-4">
+                    <form method="POST" novalidate>
+                        {% csrf_token %}
+
+                        <!-- Seção: Conteúdo da Anotação -->
+                        <div class="mb-4">
+                            <h6 class="text-uppercase text-muted small fw-bold ls-1 mb-3 d-flex align-items-center gap-2">
+                                <i class="bi bi-pencil-square"></i>
+                                Informações da Anotação
+                            </h6>
+                            <div class="row g-3">
+                                <div class="col-md-10">
+                                    {{ form.title|as_crispy_field }}
+                                </div>
+                                <div class="col-md-2">
+                                    {{ form.order|as_crispy_field }}
+                                </div>
+                                <div class="col-md-12">
+                                    {{ form.course|as_crispy_field }}
+                                </div>
+                            </div>
+                            <div class="row g-3 mt-0">
+                                <div class="col-md-12">
+                                    {{ form.content|as_crispy_field }}
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Divider -->
+                        <hr class="my-4 opacity-25">
+
+                        <!-- Botões -->
+                        <div class="row g-3 justify-content-end">
+                            <div class="col-md-3 col-lg-2">
+                                <a href="{% url 'note-list' %}"
+                                    class="btn btn-outline-secondary d-inline-flex align-items-center gap-2 px-4 py-2 rounded-3">
+                                    <i class="bi bi-arrow-left"></i>
+                                    <span>Voltar</span>
+                                </a>
+                            </div>
+                            <div class="col-md-3 col-lg-2">
+                                <button type="submit"
+                                    class="btn btn-primary d-inline-flex align-items-center gap-2 px-4 py-2 rounded-3">
+                                    <i class="bi bi-save"></i>
+                                    <span>Salvar</span>
+                                </button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+{% endblock content %}
+{% comment %} {% extends 'base.html' %}
+{% load static %}
+
+{% block title %}{% if note %}Alteração de {% else %}Nova {% endif %} Anotação{% endblock title %}
+
+{% block extra_css %}
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/easymde/dist/easymde.min.css"/>
+    <script src="https://cdn.jsdelivr.net/npm/easymde/dist/easymde.min.js"></script>
+{% endblock extra_css %}
+
+{% block content %}
+{% load crispy_forms_tags %}
+
+<div class="row justify-content-center">
+    <div class="col-12 col-md-12 col-lg-12">
+        <!-- Card header / contexto -->
+        <div class="card shadow p-2 mb-4">
+            <div class="card-body p-2 d-flex flex-column flex-md-row align-items-start align-items-md-center justify-content-between gap-3">
+                <div class="d-flex align-items-center gap-3">
+                <div>
+                    <h1 class="h4 mb-1 title-aqua">
+                    {% if note %}Alterar Anotação{% else %}Nova Anotação{% endif %}
+                    </h1>
+                    <div class="text-body-secondary">
+                    {% if course %}
+                        Atualize as informações do curso e salve as alterações.
+                    {% else %}
+                        Preencha os dados para criar um novo curso.
+                    {% endif %}
+                    </div>
+                </div>
+                </div>
+
+                <a href="{% url 'note-detail' note.id %}" class="btn btn-outline-secondary px-4">
+                    <i class="bi bi-arrow-left me-2"></i>
+                    Voltar para os detalhes
+                </a>
+            </div>
+        </div>
+
+        <div class="card shadow-sm border-0">
+            <div class="card-body">
+                <form method="post" novalidate>
+                    {% csrf_token %}
+                    <div class="row">
+                        <div class="col-md-10">
+                            <div class="form-group">
+                                {{ form.title| as_crispy_field }}
+                            </div>
+                        </div>
+                        <div class="col-md-2">
+                            <div class="form-group">
+                                {{ form.order| as_crispy_field }}
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-12">
+                            <div class="form-group">
+                                {{ form.content| as_crispy_field  }}
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-12">
+                            <div class="form-group">
+                                {{ form.active| as_crispy_field }}
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="d-grid gap-2 d-md-block mt-4">
+                        <button type="submit" class="btn btn-outline-primary">
+                            <i class="bi bi-save me-2"></i>
+                            Salvar
+                        </button>
+                        <a href="{% url 'note-detail' note.id %}" class="btn btn-outline-secondary ms-md-2">
+                            <i class="bi bi-x-lg me-2"></i>
+                            Cancelar
+                        </a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}
+
+
+{% block scripts %}
+    <script>
+        const easymde = new EasyMDE({
+            element: document.getElementById('id_content'),
+        });
+    </script> 
+{% endblock scripts %} {% endcomment %}

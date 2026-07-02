@@ -1,0 +1,10 @@
+SECRET_KEY=sua-chave-secreta-de-producao
+DEBUG=False
+ALLOWED_HOSTS=127.0.0.1,localhost
+DATABASE_ENGINE=django.db.backends.mysql
+DATABASE_NAME=my_prod_database
+DATABASE_USER=my_prod_user
+DATABASE_PASSWORD=my_prod_password
+DATABASE_HOST=localhost
+DATABASE_PORT=3306
+

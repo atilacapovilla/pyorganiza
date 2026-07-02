@@ -1,0 +1,73 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block title %}
+PyOrganiza - {% if transaction %}Alteração de {% else %}Nova {% endif %} Transação
+{% endblock title %}
+
+{% block content %}
+{% load crispy_forms_tags %}
+
+<div class="container-fluid py-4">
+    <div class="row justify-content-center">
+        <div class="col-xl-10 col-xxl-9">
+
+            <!-- Header -->
+            <div class="d-flex flex-column flex-md-row align-items-md-center justify-content-between gap-3 mb-4">
+                <div class="d-flex align-items-center gap-3">
+                    <div class="bg-primary bg-opacity-10 rounded-circle d-flex align-items-center justify-content-center" style="width: 48px; height: 48px;">
+                        <i class="bi bi-currency-exchange text-primary fs-5"></i>
+                    </div>
+                    <div>
+                        <h1 class="h4 fw-bold mb-0">
+                            {% if transaction %}Alteração de {% else %}Nova {% endif %} Transação
+                        </h1>
+                        <p class="text-muted small mb-0">
+                            {% if transaction %}Edite as informações da transação{% else %}Preencha os dados da nova transação{% endif %}
+                        </p>
+                    </div>
+                </div>
+                <a href="{% url 'transactions' %}" class="btn btn-outline-secondary d-inline-flex align-items-center gap-2 px-4 py-2 rounded-3">
+                    <i class="bi bi-arrow-left"></i>
+                    <span>Voltar</span>
+                </a>
+            </div>
+
+            <!-- Card do Formulário -->
+            <div class="card border-0 shadow-sm">
+                <div class="card-body px-4 pt-4 pb-4">
+                    <form method="post" enctype="multipart/form-data" novalidate>
+                        {% csrf_token %}
+                        <div class="row g-3">
+                            <div class="col-md-4">{{ form.type|as_crispy_field }}</div>
+                            <div class="col-md-4">{{ form.transaction_date|as_crispy_field }}</div>
+                            <div class="col-md-4">{{ form.due_date|as_crispy_field }}</div>
+                            <div class="col-md-4">{{ form.account|as_crispy_field }}</div>
+                            <div class="col-md-4">{{ form.category|as_crispy_field }}</div>
+                            <div class="col-md-4">{{ form.transaction_value|as_crispy_field }}</div>
+                            <div class="col-md-4">{{ form.is_paid|as_crispy_field }}</div>
+                            <div class="col-md-12">{{ form.description|as_crispy_field }}</div>
+                        </div>
+                        <hr class="my-4 opacity-25">
+                        <div class="row g-3 justify-content-end">
+                            <div class="col-md-3 col-lg-2">
+                                <a href="{% url 'transactions' %}" class="btn btn-outline-secondary w-100 d-inline-flex align-items-center justify-content-center gap-2 py-2">
+                                    <i class="bi bi-arrow-left"></i>
+                                    <span>Voltar</span>
+                                </a>
+                            </div>
+                            <div class="col-md-3 col-lg-2">
+                                <button type="submit" class="btn btn-primary w-100 d-inline-flex align-items-center justify-content-center gap-2 py-2">
+                                    <i class="bi bi-check-lg"></i>
+                                    <span>Salvar</span>
+                                </button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+{% endblock %}

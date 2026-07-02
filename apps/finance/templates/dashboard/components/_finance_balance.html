@@ -1,0 +1,61 @@
+<div class="row">
+    <div class="col-xl-4 col-md-6">
+        <div class="card bg-success text-white mb-4">
+            <div class="card-body h5">Receitas</div>
+            <div class="card-footer d-flex align-items-center justify-content-between">
+                <div class="h5">
+                    R$ {{ finance_balance.incomes | floatformat:2}}
+                </div>
+                <a class="small text-white stretched-link" href="#">Detalhes</a>
+                <div class="small text-white"><i class="bi bi-chevron-right"></i></div>
+            </div>
+        </div>
+    </div>
+    <div class="col-xl-4 col-md-6">
+        <div class="card bg-danger text-white mb-4">
+            <div class="card-body h5">Despesas</div>
+            <div class="card-footer d-flex align-items-center justify-content-between">
+                <div class="h5">
+                    R$ {{ finance_balance.expenses | floatformat:2}}
+                </div>
+                <a class="small text-white stretched-link" href="#">Detalhes</a>
+                <div class="small text-white"><i class="bi bi-chevron-right"></i></div>
+            </div>
+        </div>
+    </div>
+    <div class="col-xl-4 col-md-6">
+        {% if finance_balance.balance > 0 %}
+        <div class="card bg-primary text-white mb-4">
+            <div class="card-body h5">Saldo Balanço</div>
+            <div class="card-footer d-flex align-items-center justify-content-between">
+                <div class="h5">
+                    R$ {{ finance_balance.balance | floatformat:2 }}
+                </div>
+                <a class="small text-white stretched-link" href="#">Detalhes</a>
+                <div class="small text-white"><i class="bi bi-chevron-right"></i></div>
+            </div>
+        </div>
+        {% elif finance_balance.balance < 0 %} <div class="card bg-danger text-white mb-4">
+            <div class="card-body h5">Saldo Balanço</div>
+            <div class="card-footer d-flex align-items-center justify-content-between">
+                <div class="h5">
+                    R$ {{ finance_balance.balance | floatformat:2 }}
+                </div>
+                <a class="small text-white stretched-link" href="#">Detalhes</a>
+                <div class="small text-white"><i class="bi bi-chevron-right"></i></div>
+            </div>
+    </div>
+    {% else %}
+    <div class="card bg-secondary text-white mb-4">
+        <div class="card-body h5">Saldo Balanço</div>
+        <div class="card-footer d-flex align-items-center justify-content-between">
+            <div class="h5">
+                R$ {{ finance_balance.balance | floatformat:2 }}
+            </div>
+            <a class="small text-white stretched-link" href="#">Detalhes</a>
+            <div class="small text-white"><i class="bi bi-chevron-right"></i></div>
+        </div>
+    </div>
+    {% endif %}
+</div>
+</div>

@@ -1,0 +1,87 @@
+<div class="row">
+    <div class="col-lg-6">
+        <div class="card mb-4">
+            <div class="card-header">
+                <i class="bi bi-bar-chart-line me-1"></i>
+                Despesas Essenciais no mês
+            </div>
+            <div class="card-body"><canvas id="expenses-essential-month" width="100%" height="80"></canvas></div>
+        </div>
+    </div>
+    <div class="col-lg-6">
+        <div class="card mb-4">
+            <div class="card-header">
+                <i class="bi bi-bar-chart-line me-1"></i>
+                Despesas Não Essenciais no mês
+            </div>
+            <div class="card-body"><canvas id="expenses-non-essential-month" width="100%" height="80"></canvas></div>
+        </div>
+    </div>
+    <div class="col-md-12">
+        <div class="card mb-4">
+            <div class="card-header">
+                <i class="bi bi-table me-1"></i>
+                Método 50/30/20
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-sm table-hover">
+                        <thead>
+                            <tr>
+                                <td class="fw-bold text-success" >Rendimento Mensal</td>
+                                <td class="text-end text-success fw-bold">{{ finance_method.total_incomes | floatformat:2 }}</td>
+                            </tr>
+                            <tr>
+                                <th scope="col">Tipo de despesa</th>
+                                <th scope="col" class="text-end">Realizado</th>
+                                <th scope="col" class="text-end">Previsto</th>
+                                <th scope="col" class="text-end">Desvio</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>50% - Necessidades</td>
+                                <td class="text-end">{{ finance_method.expenses_essentials | floatformat:2 }}</td>
+                                <td class="text-end">{{ finance_method.essentials_provided | floatformat:2 }}</td>
+                                <td class="text-end">
+                                    {{ finance_method.essential_deviation | floatformat:2 }}
+                                    {% if finance_method.essential_deviation < 0 %}
+                                    <i class="bi bi-exclamation-circle-fill text-danger"></i>
+                                    {% else %}
+                                    <i class="bi bi-check-circle-fill text-success"></i>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>30% - Desejos</td>
+                                <td class="text-end">{{ finance_method.expenses_superfluous | floatformat:2 }}</td>
+                                <td class="text-end">{{ finance_method.superfluous_provided | floatformat:2 }}</td>
+                                <td class="text-end h6">
+                                    {{ finance_method.superfluous_deviation | floatformat:2 }}
+                                    {% if finance_method.superfluous_deviation < 0 %}
+                                    <i class="bi bi-exclamation-circle-fill text-danger"></i>
+                                    {% else %}
+                                    <i class="bi bi-check-circle-fill text-success"></i>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>20% - Poupança / Investimentos</td>
+                                <td class="text-end">{{ finance_method.reserves | floatformat:2 }}</td>
+                                <td class="text-end">{{ finance_method.reserves_provided | floatformat:2 }}</td>
+                                <td class="text-end">
+                                    {{ finance_method.reserves_deviation | floatformat:2 }}
+                                    {% if finance_method.reserves_deviation < 0 %}
+                                    <i class="bi bi-exclamation-circle-fill text-danger"></i>
+                                    {% else %}
+                                    <i class="bi bi-check-circle-fill text-success"></i>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

@@ -1,0 +1,97 @@
+{% load static %}
+<!-- Navbar -->
+<header class="navbar" id="navbar">
+    <div class="navbar-left">
+        <button class="navbar-toggle" id="sidebarToggle">
+            <i class="bi bi-list"></i>
+        </button>
+        
+        <div class="navbar-search">
+            <i class="bi bi-search"></i>
+            <input type="text" placeholder="Buscar...">
+        </div>
+    </div>
+
+    <div class="navbar-right">
+        <button class="navbar-icon">
+            <i class="bi bi-bell"></i>
+            <span class="badge">5</span>
+        </button>
+        
+        <button class="navbar-icon">
+            <i class="bi bi-envelope"></i>
+            <span class="badge">2</span>
+        </button>
+        
+        <button class="theme-toggle" id="themeToggle">
+            <i class="bi bi-moon"></i>
+            <span class="theme-text">Dark</span>
+        </button>
+        
+        <div class="user-menu" id="userMenu">
+          {% if user.profile %}
+            <img src="{{user.profile.avatar.url}}" alt="{{ user.username }}" class="user-avatar">
+          {% else %}
+            <img src="{% static 'img/sem_imagem.png' %}" class="img-fluid" alt="Imagem" class="user-avatar">
+          {% endif %}     
+            <div class="user-info">
+                <div class="user-name">{{ request.user }}</div>
+                <div class="user-role">
+                  {% if user.is_superuser %} 
+                    Supervisor
+                  {% endif %}
+                  {% if user.is_staff %}
+                  Administrador
+                  {% endif %}
+                </div>
+            </div>
+            <i class="bi bi-chevron-down"></i>
+            
+            <!-- Dropdown do Usuário -->
+            <div class="user-dropdown" id="userDropdown">
+                <div class="user-dropdown-header">
+                    <div class="user-dropdown-name">
+                      {% if request.user.first_name %}
+                        {{ request.user.get_full_name }}
+                      {% else %}
+                        {{ request.user }}
+                      {% endif %}
+                    </div>
+                    <div class="user-dropdown-email">
+                      {% if request.user.email %}
+                        {{ request.user.email }}
+                      {% else %}
+                        
+                      {% endif %}
+                    </div>
+                </div>
+                <div class="user-dropdown-menu">
+                    <a href="{% url 'profile' %}" class="user-dropdown-item">
+                        <i class="bi bi-person"></i>
+                        <span>Meu Perfil</span>
+                    </a>
+                    <a href="#" class="user-dropdown-item">
+                        <i class="bi bi-gear"></i>
+                        <span>Configurações</span>
+                    </a>
+                    <a href="#" class="user-dropdown-item">
+                        <i class="bi bi-bell"></i>
+                        <span>Notificações</span>
+                    </a>
+                    <a href="#" class="user-dropdown-item">
+                        <i class="bi bi-question-circle"></i>
+                        <span>Ajuda & Suporte</span>
+                    </a>
+                    <div class="user-dropdown-divider"></div>
+                    <form action="{% url 'logout' %}" method="post">
+                        {% csrf_token %}
+                        <button type="submit" class="btn btn-custom text-danger fs-5">
+                            <i class="bi bi-box-arrow-right ms-2 me-2"></i>
+                            Sair
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</header>

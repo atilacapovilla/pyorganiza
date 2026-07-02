@@ -1,0 +1,55 @@
+{% for node in nodes %}
+{% with cat=node.category %}
+<tr>
+    <td style="padding-left: {{ level }}em;">
+        <span class="d-inline-block rounded-circle me-1" style="width: 10px; height: 10px; background-color: {{ cat.color }};"></span>
+        {% if not node.is_leaf %}
+        <span class="fw-semibold">{{ cat.name }}</span>
+        {% else %}
+        <span class="text-secondary">{{ cat.name }}</span>
+        {% endif %}
+    </td>
+    <td>
+        {% if node.is_leaf %}
+        <span class="badge bg-opacity-10
+            {% if cat.category_type == 'receita' %}bg-success text-success
+            {% elif cat.category_type == 'despesa' %}bg-danger text-danger
+            {% else %}bg-info text-info{% endif %}">
+            {{ cat.get_category_type_display }}
+        </span>
+        {% endif %}
+    </td>
+    <td class="text-end fw-semibold">R$ {{ node.planned|floatformat:2 }}</td>
+    <td class="text-end fw-semibold">R$ {{ node.actual|floatformat:2 }}</td>
+    <td class="text-end">
+        {% if node.percentage is not None %}
+        <div class="d-flex align-items-center justify-content-end gap-2">
+            <div class="progress" style="width: 80px; height: 8px;">
+                <div class="progress-bar bg-{{ node.status }}" role="progressbar"
+                     style="width: {{ node.percentage|floatformat:0 }}%;"
+                     aria-valuenow="{{ node.percentage|floatformat:0 }}" aria-valuemin="0" aria-valuemax="100">
+                </div>
+            </div>
+            <span class="small fw-bold text-{{ node.status }}">
+                {{ node.percentage|floatformat:1 }}%
+            </span>
+        </div>
+        {% else %}
+        <span class="text-muted small">—</span>
+        {% endif %}
+    </td>
+    <td class="text-end">
+        <span class="fw-semibold text-{{ node.status }}">
+            {% if node.diff != 0 %}
+                {% if node.diff > 0 %}+{% endif %}{{ node.diff|floatformat:2 }}
+            {% else %}
+                —
+            {% endif %}
+        </span>
+    </td>
+</tr>
+{% if node.children %}
+{% include "planning/_consulta_row.html" with nodes=node.children level=level|add:2 %}
+{% endif %}
+{% endwith %}
+{% endfor %}

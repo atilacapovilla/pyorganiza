@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
+    <meta name="description" content="" />
+    <meta name="author" content="" />
+    <title>PyPessoal - Anotação Report</title>
+    
+    <style>
+        /* Corpo da página */
+        body {
+            font-family: Arial, sans-serif;
+            font-size: 14px;
+            margin: 0;
+            padding: 0;
+            background-color: #fff;
+        }
+
+        /* Configuração da página PDF */
+         @page {
+            size: A4;
+            margin-left: 50px;
+            margin-right: 20px; 
+            @top-left {
+                background: #fff;
+                content: '';
+                height: 2.5cm;
+            }
+            @top-center {
+                content: element(header);
+                height: 2,5cm;
+            }
+        }
+        
+        @page {
+            @bottom-center {
+                background: #b3b3dc;
+                content: "Página " counter(page) " de " counter(pages);
+                display: block;
+                font-size: 10pt;
+                height: 20px;
+                width: 100%;
+            }
+        }
+
+        .page-break {
+            break-before: page; 
+            page-break-before: always; 
+        }
+
+
+        /* Header */
+        header {
+            display: block;
+            position: running(header);
+            height: 2.5cm;
+        }
+        
+        .header-flex {
+            display: flex;
+            justify-content: space-between;
+            width: 100%;
+        }
+
+        .header-col-title {
+            flex: 7; /* 70% */
+            text-align: center;
+        }
+
+        .header-title {
+            font-weight: bold;
+            font-size: 9pt; 
+            text-transform: uppercase;
+        }
+
+        .header-col-info {
+            flex: 3; /* 30% */
+            text-align: center;
+            font-size: 8pt;
+        }
+
+        .page-counter::before {
+            content: "Página " counter(page) " de " counter(pages);
+        } 
+         
+        .text-center { text-align: center; }
+        .text-right { text-align: right; }
+        .text-small { font-size: 8pt; }
+        .fw-bold { font-weight: bold; }
+
+    </style>
+</head>
+<body>
+    <header class="page-break">
+        <div class="header-flex">
+            <div class="header-col-title">
+                <div class="header-title">{{ note.course }}</div>
+                <div class="header-title"># {{note.order}} - {{ note.title }}</div>
+                <div class="text-small">
+                    {% if note.user.first_name %}
+                        {{ note.user.first_name }} {{ note.user.last_name }},
+                    {% else %}
+                        {{ note.user }},
+                    {% endif %}
+                    em {{ note.created_at|date:"d F Y" }},
+                    Ultima alteração {{ note.updated_at|date:"d F Y" }}
+                </div>
+            </div>
+            <div class="header-col-info">
+                <div class="header-title">Emissão em: {% now "d/m/Y" %}</div>
+                <div class="header-title page-counter"></div>
+            </div>
+        </div>
+    </header>
+
+    <main class="container">
+        {{ note.formatted_content|safe }}
+    </main>
+</body>
+</html>

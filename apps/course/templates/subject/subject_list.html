@@ -1,0 +1,161 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}PyOrganiza - Assuntos{% endblock title %}
+
+{% block content %}
+
+<div class="container-fluid py-4">
+    <div class="row justify-content-center">
+        <div class="col-xl-12 col-xxl-12">
+
+            <!-- Header -->
+            <div class="d-flex flex-column flex-md-row align-items-md-center justify-content-between gap-3 mb-4">
+                <div class="d-flex align-items-center gap-3">
+                    <div class="bg-primary bg-opacity-10 rounded-circle d-flex align-items-center justify-content-center" style="width: 48px; height: 48px;">
+                        <i class="bi bi-tags text-primary fs-5"></i>
+                    </div> 
+                    <div>
+                        <h1 class="h4 fw-bold mb-0">Assuntos</h1>
+                        <p class="text-muted mb-0">
+                          Listagem 
+                          <span class="badge bg-primary bg-opacity-10 text-primary rounded-pill ms-2">
+                            {{ subjects|length }} resultado(s)
+                        </span>
+                        </p>
+                    </div>
+                </div>
+                <a href="{% url 'subject-create' %}" class="btn btn-success d-inline-flex align-items-center gap-2 px-4 py-2 rounded-3">
+                    <i class="bi bi-plus-lg"></i>
+                    <span>Novo Assunto</span>
+                </a>
+            </div>
+
+            <!-- Filtros -->
+            <div class="card mb-2">
+                <div class="card-body pt-2 pb-4">
+                    <form id="filtro-form" method="get">
+                        <div class="row g-3 align-items-end">
+                            <div class="col-md-8">
+                                <label for="nome" class="form-label text-muted small fw-semibold text-uppercase ls-1">Pesquisar pelo nome do assunto</label>
+                                <div class="input-group">
+                                    <span class="input-group-text bg-light border-end-0">
+                                        <i class="bi bi-search text-muted"></i>
+                                    </span>
+                                    <input name="search" type="text" value="{{ request.GET.search }}" class="form-control bg-light" placeholder="Digite o nome do assunto...">
+                                </div> 
+                            </div>
+                            <div class="col-md-2">
+                                <button type="submit" id="buscar-btn" class="btn btn-outline-primary w-100 d-inline-flex align-items-center justify-content-center gap-2 py-2">
+                                    <i class="bi bi-search"></i>
+                                    <span>Buscar</span>
+                                </button>
+                            </div>
+                            <div class="col-md-2">
+                              {% if request.GET.search %}
+                                <a href="{% url 'subjects' %}" class="btn btn-outline-secondary w-100 d-inline-flex align-items-center justify-content-center gap-2 py-2">
+                                    <i class="bi bi-x-lg me-1"></i> Limpar filtros
+                                </a>
+                              {% endif %}
+                            </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Tabela -->
+            <div class="card border-0 shadow-sm">
+                <div class="card-body pt-3 pb-4">
+                    <div class="table-responsive">
+                        <table class="table table-hover align-middle mb-0">
+                            <thead>
+                                <tr>
+                                    <th class="text-muted small fw-semibold text-uppercase ls-1">Assunto</th>
+                                    <th class="text-muted small fw-semibold text-uppercase ls-1">Autor</th>
+                                    <th class="text-muted small fw-semibold text-uppercase ls-1">Cursos</th>
+                                    <th class="text-muted small fw-semibold text-uppercase ls-1">Status</th>
+                                    <th class="text-muted small fw-semibold text-uppercase ls-1 text-end">Ações</th>
+                                </tr>
+                            </thead>
+                            <tbody class="border-top-0">
+                                {% for subject in subjects %}
+                                <tr>
+                                    <td class="fw-medium">
+                                      {{ subject.title }}
+                                    </td>
+                                    <td>
+                                      <div class="small muted">
+                                        <span class="small muted">
+                                          {% if subject.user.first_name %}
+                                            {{ subject.user.get_full_name }}
+                                          {% else %}
+                                            {{ subject.user }}
+                                          {% endif %}
+                                        </span>
+                                      </div>
+                                    </td>
+                                    <td>
+                                        <a class="chip text-decoration-none" href="{% url 'courses' %}">
+                                          {% with total=subject.courses.count %}
+                                              {{ total }} {{ total|pluralize:"curso,cursos" }}
+                                          {% endwith %}
+                                      </a>
+                                    </td>
+                                    
+                                    <td>
+                                        <h5>
+                                            {% if subject.active %}
+                                            <span class="badge bg-success bg-opacity-10 text-success">
+                                                Ativo
+                                            </span>
+                                            {% else %}
+                                            <span class="badge bg-danger bg-opacity-10 text-danger">
+                                                Inativo
+                                            </span>
+                                            {% endif %}
+                                        </h5>
+                                    </td>
+                                    <td class="text-end">
+                                        {% comment %} <div class="btn-group" role="group"> {% endcomment %}
+                                            <a href="{% url 'subject-update' subject.id %}" class="btn btn-sm btn-outline-primary" title="Editar">
+                                                <i class="bi bi-pencil-square"></i>
+                                            </a>
+                                            <a href="{% url 'subject-delete' subject.id %}" class="btn btn-sm btn-outline-danger" title="Excluir">
+                                                <i class="bi bi-trash"></i>
+                                            </a>
+                                            
+                                        {% comment %} </div> {% endcomment %}
+                                    </td>
+                                </tr>
+                                {% empty %}
+                                <tr>
+                                    <td colspan="6" class="text-center py-5">
+                                        <div class="bg-light rounded-circle d-inline-flex align-items-center justify-content-center mb-3" style="width: 64px; height: 64px;">
+                                            <i class="bi bi-inbox text-muted fs-2"></i>
+                                        </div>
+                                        <p class="text-muted mb-0">Nenhum assuntos encontrado</p>
+                                        {% if request.GET.q %}
+                                        <a href="{% url 'subjects' %}" class="btn btn-sm btn-outline-secondary mt-2">
+                                            <i class="bi bi-x-lg me-1"></i> Limpar filtros
+                                        </a>
+                                        {% else %}
+                                        <a href="{% url 'subject-create' %}" class="btn btn-sm btn-success mt-2">
+                                            <i class="bi bi-plus-lg me-1"></i> Cadastrar primeiro assunto
+                                        </a>
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    <div class="mt-4 pt-3 border-top">
+                        {% include "components/_pagination.html" %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock content %}
+

@@ -1,0 +1,161 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}PyOrganiza - Transações{% endblock title %}
+
+{% block content %}
+
+<div class="container-fluid py-4">
+    <div class="row justify-content-center">
+        <div class="col-xl-12 col-xxl-12">
+
+            <!-- Header -->
+            <div class="d-flex flex-column flex-md-row align-items-md-center justify-content-between gap-3 mb-4">
+                <div class="d-flex align-items-center gap-3">
+                    <div class="bg-primary bg-opacity-10 rounded-circle d-flex align-items-center justify-content-center" style="width: 48px; height: 48px;">
+                        <i class="bi bi-currency-exchange text-primary fs-5"></i>
+                    </div>
+                    <div>
+                        <h1 class="h4 fw-bold mb-0">Transações</h1>
+                        <p class="text-muted small mb-0">Gerencie seus lançamentos financeiros</p>
+                    </div>
+                </div>
+                <div class="dropdown">
+                    <button class="btn btn-success dropdown-toggle d-inline-flex align-items-center gap-2 px-4 py-2 rounded-3" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                        <i class="bi bi-plus-lg"></i>
+                        <span>Nova Transação</span>
+                    </button>
+                    <ul class="dropdown-menu dropdown-menu-end border-2 border-primary shadow-sm">
+                        <li>
+                            <a class="dropdown-item" href="{% url 'transaction-create' %}">
+                                <i class="bi bi-cash-coin me-2"></i> Débito/Crédito
+                            </a>
+                        </li>
+                        <li>
+                            <a class="dropdown-item" href="{% url 'transfer' %}">
+                                <i class="bi bi-arrow-left-right me-2"></i> Transferência
+                            </a>
+                        </li>
+                        <li>
+                            <a class="dropdown-item" href="{% url 'cards' %}">
+                                <i class="bi bi-credit-card me-2"></i> Pagamento Cartão de Crédito
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- Filtros -->
+            <div class="card mb-4">
+                <div class="card-body pt-3 pb-4">
+                    <h6 class="text-uppercase text-muted small fw-bold ls-1 mb-3 d-flex align-items-center gap-2">
+                        <i class="bi bi-funnel"></i> Filtrar Transações
+                    </h6>
+                    <form class="row g-3 align-items-end">
+                        <div class="col-md-3">
+                            <label class="form-label text-muted small fw-semibold text-uppercase ls-1">Data Inicial</label>
+                            <div class="input-group">
+                                <span class="input-group-text bg-light border-end-0"><i class="bi bi-calendar3 text-muted"></i></span>
+                                <input name="start_date" type="date" value="{{ request.GET.start_date }}" class="form-control bg-light">
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label text-muted small fw-semibold text-uppercase ls-1">Data Final</label>
+                            <div class="input-group">
+                                <span class="input-group-text bg-light border-end-0"><i class="bi bi-calendar3 text-muted"></i></span>
+                                <input name="end_date" type="date" value="{{ request.GET.end_date }}" class="form-control bg-light">
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label text-muted small fw-semibold text-uppercase ls-1">Conta</label>
+                            <select class="form-select bg-light" name="account">
+                                <option value="">Todas as Contas</option>
+                                {% for account in accounts %}
+                                <option value="{{ account.id }}" {% if request.GET.account == account.id|stringformat:"s" %}selected{% endif %}>
+                                    {{ account }}
+                                </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="col-md-3 d-flex gap-2">
+                            <button type="submit" class="btn btn-outline-primary d-inline-flex align-items-center gap-2 px-4 py-2">
+                                <i class="bi bi-search"></i> Filtrar
+                            </button>
+                            {% if request.GET.start_date %}
+                            <a href="{% url 'transactions' %}" class="btn btn-outline-secondary d-inline-flex align-items-center gap-2 px-4 py-2">
+                                <i class="bi bi-x-lg"></i> Limpar
+                            </a>
+                            {% endif %}
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Tabela -->
+            <div class="card border-0 shadow-sm">
+                <div class="card-body pt-3 pb-4">
+                    {% if transactions %}
+                    <div class="table-responsive">
+                        <table class="table table-hover align-middle mb-0">
+                            <thead>
+                                <tr>
+                                    <th class="text-muted small fw-semibold text-uppercase ls-1">Data</th>
+                                    <th class="text-muted small fw-semibold text-uppercase ls-1">Vencimento</th>
+                                    <th class="text-muted small fw-semibold text-uppercase ls-1">Conta</th>
+                                    <th class="text-muted small fw-semibold text-uppercase ls-1">Descrição</th>
+                                    <th class="text-muted small fw-semibold text-uppercase ls-1">Categoria</th>
+                                    <th class="text-muted small fw-semibold text-uppercase ls-1 text-end">Valor</th>
+                                    <th class="text-muted small fw-semibold text-uppercase ls-1 text-center">Pago</th>
+                                    <th class="text-muted small fw-semibold text-uppercase ls-1 text-end">Ações</th>
+                                </tr>
+                            </thead>
+                            <tbody class="border-top-0">
+                                {% for transaction in transactions %}
+                                <tr>
+                                    <td>{{ transaction.transaction_date|date:"d/m/Y" }}</td>
+                                    <td>{{ transaction.due_date|date:"d/m/Y" }}</td>
+                                    <td>{{ transaction.account }}</td>
+                                    <td class="fw-medium">{{ transaction.description }}</td>
+                                    <td><span class="badge bg-info bg-opacity-10 text-info">{{ transaction.category }}</span></td>
+                                    <td class="text-end fw-semibold {% if transaction.type == 'C' %}text-success{% else %}text-danger{% endif %}">
+                                        {{ transaction.transaction_value }}
+                                    </td>
+                                    <td class="text-center">
+                                        {% if transaction.is_paid %}
+                                        <span class="badge bg-success bg-opacity-10 text-success"><i class="bi bi-check-circle-fill"></i></span>
+                                        {% else %}
+                                        <span class="badge bg-danger bg-opacity-10 text-danger"><i class="bi bi-x-circle-fill"></i></span>
+                                        {% endif %}
+                                    </td>
+                                    <td class="text-end">
+                                        <a href="{% url 'transaction-update' transaction.id %}" class="btn btn-sm btn-outline-primary" title="Editar">
+                                            <i class="bi bi-pencil-square"></i>
+                                        </a>
+                                        <a href="{% url 'transaction-delete' transaction.id %}" class="btn btn-sm btn-outline-danger" title="Excluir">
+                                            <i class="bi bi-trash"></i>
+                                        </a>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    {% else %}
+                    <div class="text-center py-5">
+                        <div class="bg-light rounded-circle d-inline-flex align-items-center justify-content-center mb-3" style="width: 64px; height: 64px;">
+                            <i class="bi bi-currency-exchange text-muted fs-2"></i>
+                        </div>
+                        <p class="text-muted mb-0">Nenhuma transação encontrada</p>
+                        <a href="{% url 'transaction-create' %}" class="btn btn-success mt-3">
+                            <i class="bi bi-plus-lg me-1"></i> Nova Transação
+                        </a>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+{% endblock content %}

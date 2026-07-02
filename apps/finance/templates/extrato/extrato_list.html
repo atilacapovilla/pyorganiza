@@ -1,0 +1,151 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}PyOrganiza - Extrato Mensal{% endblock title %}
+
+{% block content %}
+
+<div class="container-fluid py-4">
+    <div class="row justify-content-center">
+        <div class="col-xl-12 col-xxl-12">
+
+            <div class="d-flex flex-column flex-md-row align-items-md-center justify-content-between gap-3 mb-4">
+                <div class="d-flex align-items-center gap-3">
+                    <div class="bg-primary bg-opacity-10 rounded-circle d-flex align-items-center justify-content-center" style="width: 48px; height: 48px;">
+                        <i class="bi bi-file-earmark-text text-primary fs-5"></i>
+                    </div>
+                    <div>
+                        <h1 class="h4 fw-bold mb-0">Extrato Mensal</h1>
+                        <p class="text-muted small mb-0">Consulta de transações por período</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card mb-4">
+                <div class="card-body pt-3 pb-4">
+                    <h6 class="text-uppercase text-muted small fw-bold ls-1 mb-3 d-flex align-items-center gap-2">
+                        <i class="bi bi-funnel"></i> Filtrar
+                    </h6>
+                    <form class="row g-3 align-items-end" method="get">
+                        <div class="col-md-2">
+                            <label class="form-label text-muted small fw-semibold text-uppercase ls-1">Data Inicial</label>
+                            <div class="input-group">
+                                <span class="input-group-text bg-light border-end-0"><i class="bi bi-calendar3 text-muted"></i></span>
+                                <input name="start_date" type="date" value="{{ request.GET.start_date }}" class="form-control bg-light">
+                            </div>
+                        </div>
+                        <div class="col-md-2">
+                            <label class="form-label text-muted small fw-semibold text-uppercase ls-1">Data Final</label>
+                            <div class="input-group">
+                                <span class="input-group-text bg-light border-end-0"><i class="bi bi-calendar3 text-muted"></i></span>
+                                <input name="end_date" type="date" value="{{ request.GET.end_date }}" class="form-control bg-light">
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label text-muted small fw-semibold text-uppercase ls-1">Conta</label>
+                            <select class="form-select bg-light" name="account">
+                                <option value="">Todas as Contas</option>
+                                {% for account in accounts %}
+                                <option value="{{ account.id }}" {% if selected_account == account.id|stringformat:"s" %}selected{% endif %}>
+                                    {{ account }}
+                                </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label text-muted small fw-semibold text-uppercase ls-1">Status</label>
+                            <select class="form-select bg-light" name="status">
+                                <option value="todos" {% if selected_status == "todos" %}selected{% endif %}>Todos</option>
+                                <option value="pagos" {% if selected_status == "pagos" %}selected{% endif %}>Pagos</option>
+                                <option value="abertos" {% if selected_status == "abertos" %}selected{% endif %}>Em aberto</option>
+                                <option value="vencidos" {% if selected_status == "vencidos" %}selected{% endif %}>Vencidos e não pagos</option>
+                            </select>
+                        </div>
+                        <div class="col-md-2 d-flex gap-2">
+                            <button type="submit" class="btn btn-outline-primary d-inline-flex align-items-center gap-2 px-4 py-2">
+                                <i class="bi bi-search"></i> Filtrar
+                            </button>
+                            {% if request.GET.start_date %}
+                            <a href="{% url 'extrato' %}" class="btn btn-outline-secondary d-inline-flex align-items-center gap-2 px-4 py-2">
+                                <i class="bi bi-x-lg"></i> Limpar
+                            </a>
+                            {% endif %}
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            {% if extrato_rows %}
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-transparent d-flex flex-wrap align-items-center justify-content-between gap-2">
+                    <div>
+                        <span class="fw-semibold">Período: {{ start_date|date:"d/m/Y" }} a {{ end_date|date:"d/m/Y" }}</span>
+                    </div>
+                    <a href="{% url 'extrato-pdf' %}?{{ request.GET.urlencode }}" target="_blank" class="btn btn-outline-danger d-inline-flex align-items-center gap-2">
+                        <i class="bi bi-printer"></i> Imprimir
+                    </a>
+                </div>
+                <div class="card-body pt-3 pb-4">
+                    <div class="table-responsive">
+                        <table class="table table-hover align-middle mb-0">
+                            <thead>
+                                <tr>
+                                    <th class="text-muted small fw-semibold text-uppercase ls-1">Data</th>
+                                    <th class="text-muted small fw-semibold text-uppercase ls-1">Vencimento</th>
+                                    <th class="text-muted small fw-semibold text-uppercase ls-1">Conta</th>
+                                    <th class="text-muted small fw-semibold text-uppercase ls-1">Descrição</th>
+                                    <th class="text-muted small fw-semibold text-uppercase ls-1">Categoria</th>
+                                    <th class="text-muted small fw-semibold text-uppercase ls-1 text-end">Débito</th>
+                                    <th class="text-muted small fw-semibold text-uppercase ls-1 text-end">Crédito</th>
+                                    <th class="text-muted small fw-semibold text-uppercase ls-1 text-end">Saldo</th>
+                                </tr>
+                            </thead>
+                            <tbody class="border-top-0">
+                                {% for row in extrato_rows %}
+                                <tr>
+                                    <td>{{ row.transaction.transaction_date|date:"d/m/Y" }}</td>
+                                    <td>{{ row.transaction.due_date|date:"d/m/Y" }}</td>
+                                    <td>{{ row.transaction.account }}</td>
+                                    <td class="fw-medium">{{ row.transaction.description|default:"-" }}</td>
+                                    <td><span class="badge bg-info bg-opacity-10 text-info">{{ row.transaction.category }}</span></td>
+                                    {% if row.transaction.type == "D" %}
+                                    <td class="text-end text-danger fw-semibold">{{ row.transaction.transaction_value|floatformat:2 }}</td>
+                                    <td class="text-end"></td>
+                                    {% else %}
+                                    <td class="text-end"></td>
+                                    <td class="text-end text-success fw-semibold">{{ row.transaction.transaction_value|floatformat:2 }}</td>
+                                    {% endif %}
+                                    <td class="text-end fw-bold {% if row.running_balance < 0 %}text-danger{% else %}text-success{% endif %}">
+                                        {{ row.running_balance|floatformat:2 }}
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                            <tfoot class="table-light">
+                                <tr>
+                                    <td colspan="5" class="fw-bold text-uppercase">Totais</td>
+                                    <td class="text-end text-danger fw-bold">{{ total_debitos|floatformat:2 }}</td>
+                                    <td class="text-end text-success fw-bold">{{ total_creditos|floatformat:2 }}</td>
+                                    <td class="text-end fw-bold {% if saldo_final < 0 %}text-danger{% else %}text-success{% endif %}">
+                                        {{ saldo_final|floatformat:2 }}
+                                    </td>
+                                </tr>
+                            </tfoot>
+                        </table>
+                    </div>
+                </div>
+            </div>
+            {% else %}
+            <div class="text-center py-5">
+                <div class="bg-light rounded-circle d-inline-flex align-items-center justify-content-center mb-3" style="width: 64px; height: 64px;">
+                    <i class="bi bi-file-earmark-text text-muted fs-2"></i>
+                </div>
+                <p class="text-muted mb-0">Nenhuma transação encontrada para o período</p>
+            </div>
+            {% endif %}
+
+        </div>
+    </div>
+</div>
+
+{% endblock content %}

@@ -1,0 +1,159 @@
+{% load static %}
+<!-- SIDEBAR -->
+<aside class="sidebar p-3">
+
+    <div class="d-flex align-items-center gap-2 mb-3">
+    <div class="brand-icon" aria-hidden="true">
+        <i class="bi bi-boxes"></i>
+    </div>
+    <div class="lh-sm">
+        <div class="fw-semibold title-aqua">S.G.P.</div>
+    </div>
+    </div>
+
+    <!-- Toggle de tema -->
+    <div class="card card-soft border mb-3">
+    <div class="card-body py-2">
+        <div class="d-flex align-items-center justify-content-between">
+        <div class="d-flex align-items-center gap-2">
+            <div class="nav-icon" id="themeIcon" aria-hidden="true">🌙</div>
+            <div>
+            <div class="fw-semibold small mb-0">Tema</div>
+            <div class="text-secondary small" id="themeLabel">Escuro</div>
+            </div>
+        </div>
+
+        <div class="form-check form-switch m-0">
+            <input class="form-check-input" type="checkbox" role="switch" id="themeSwitch" aria-label="Alternar tema">
+        </div>
+        </div>
+    </div>
+    </div>
+
+    <ul class="nav nav-pills flex-column gap-2" id="moduleNav" aria-label="Módulos">
+        <li class="nav-item">
+            <a class="nav-link active w-100" type="button"  href="{% url 'courses' %}">
+            <span class="d-flex align-items-center gap-2">
+                <span class="nav-icon" aria-hidden="true">💳</span>
+                <span>Anotações</span>
+            </span>
+            </a>
+        </li>
+    
+        <li class="nav-item">
+            <button class="nav-link w-100" type="button" href="{% url 'dashboard' %}">
+            <span class="d-flex align-items-center gap-2">
+                <span class="nav-icon" aria-hidden="true">👥</span>
+                <span>Financeira</span>
+            </span>
+            </button>
+        </li>
+        
+        <li class="nav-item">
+            <button class="nav-link w-100" type="button">
+            <span class="d-flex align-items-center gap-2">
+                <span class="nav-icon" aria-hidden="true">🧾</span>
+                <span>Tarefas</span>
+            </span>
+            </button>
+        </li>
+    </ul>
+
+    <div class="mt-3 small text-secondary">
+    <div class="d-flex justify-content-between"><span>Ambiente</span><span class="fw-semibold">Homologação</span></div>
+    <div class="d-flex justify-content-between"><span>Versão</span><span class="fw-semibold">v1.0.0</span></div>
+    <div class="d-flex justify-content-between"><span>Status</span><span class="fw-semibold text-success">Online</span></div>
+    </div>
+</aside>
+
+
+
+{% comment %} <div id="layoutSidenav_nav">
+    <nav class="sb-sidenav accordion sb-sidenav-dark-custom" id="sidenavAccordion">
+        <div class="sb-sidenav-menu">
+            <div class="nav mt-3">
+                <a class="nav-link" href="{% url 'principal' %}">
+                    <div class="sb-nav-link-icon">
+                        <i class="bi bi-house-door h6"></i>
+                    </div>
+                    Principal
+                </a>
+                <div class="sb-sidenav-menu-heading">Caderno de Estudos</div>
+                <a class="nav-link" href="{% url 'subjects' %}">
+                    <div class="sb-nav-link-icon">
+                        <i class="bi bi-tags h6"></i>
+                    </div>
+                    Assuntos
+                </a>
+                <a class="nav-link" href="{% url 'courses' %}">
+                    <div class="sb-nav-link-icon">
+                        <i class="bi bi-journal-richtext h6"></i>
+                    </div>
+                    Cursos
+                </a>
+
+                <div class="sb-sidenav-menu-heading">Financeiro</div>
+                <a class="nav-link" href="{% url 'dashboard' %}">
+                    <div class="sb-nav-link-icon">
+                        <i class="bi bi-speedometer2 h6"></i>
+                    </div>
+                    Dashboard
+                </a>
+                <a class="nav-link collapsed" href="#" data-bs-toggle="collapse" data-bs-target="#collapseLayouts"
+                    aria-expanded="false" aria-controls="collapseLayouts">
+                    <div class="sb-nav-link-icon">
+                        <i class="bi bi-pencil-square h6"></i>
+                    </div>
+                    Cadastros
+                    <div class="sb-sidenav-collapse-arrow"><i class="bi bi-chevron-down"></i></div>
+                </a>
+                <div class="collapse" id="collapseLayouts" aria-labelledby="headingOne"
+                    data-bs-parent="#sidenavAccordion">
+                    <nav class="sb-sidenav-menu-nested nav">
+                        <a class="nav-link" href="{% url 'categories' %}">Categorias</a>
+                        <a class="nav-link" href="{% url 'accounts' %}">Contas</a>
+                    </nav>
+                </div>
+                <a class="nav-link" href="{% url 'transactions' %}">
+                    <div class="sb-nav-link-icon">
+                        <i class="bi bi-database-add h6"></i>
+                    </div>
+                    Transações
+                </a>
+                <a class="nav-link collapsed" href="#" data-bs-toggle="collapse" data-bs-target="#extratos"
+                    aria-expanded="false" aria-controls="extratos">
+                    <div class="sb-nav-link-icon">
+                        <i class="bi bi-printer h6"></i>
+                    </div>
+                    Relatórios
+                    <div class="sb-sidenav-collapse-arrow"><i class="bi bi-chevron-down"></i></div>
+                </a>
+                <div class="collapse" id="extratos" aria-labelledby="headingOne" data-bs-parent="#sidenavAccordion">
+                    <nav class="sb-sidenav-menu-nested nav">
+                        <a class="nav-link" href="layout-static.html">Mensal</a>
+                        <a class="nav-link" href="layout-static.html">Grupo e Categoria</a>
+                    </nav>
+                </div>
+                <a class="nav-link collapsed" href="#" data-bs-toggle="collapse" data-bs-target="#planejamento"
+                    aria-expanded="false" aria-controls="planejamento">
+                    <div class="sb-nav-link-icon">
+                        <i class="bi bi-clipboard2-data  h6"></i>
+                    </div>
+                    Planejamento
+                    <div class="sb-sidenav-collapse-arrow"><i class="bi bi-chevron-down"></i></div>
+                </a>
+                <div class="collapse" id="planejamento" aria-labelledby="headingOne" data-bs-parent="#sidenavAccordion">
+                    <nav class="sb-sidenav-menu-nested nav">
+                        <a class="nav-link" href="layout-static.html">Definir</a>
+                        <a class="nav-link" href="layout-static.html">Visualizar</a>
+                    </nav>
+                </div>
+            </div>
+        </div>
+
+        <div class="sb-sidenav-footer">
+            <div class="small">Usuário logado:</div>
+            {{ request.user }}
+        </div>
+    </nav>
+</div> {% endcomment %}

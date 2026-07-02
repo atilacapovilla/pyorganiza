@@ -1,0 +1,75 @@
+{%extends 'base.html'%}
+{% load static %}
+
+{% block title %}Home{% endblock title %}
+
+{% block content %}
+    
+<header class="mt-5 mb-5">
+  <div class="container">
+    <div class="row align-items-start g-4">
+      <!-- LEFT: keep as is (hero pitch) -->
+      <div class="col-lg-7">
+        <div class="mb-5">
+          <span class="badge text-bg-light border">Focado em produtividade pessoal</span>
+        </div>
+        <h1 class="display-5 fw-semibold mb-5">
+          Notas de cursos, finanças e tarefas — tudo num só lugar.
+        </h1>
+        <p class="lead muted mb-5">
+          Um espaço simples para organizar o que você estuda, o que você precisa fazer e como anda seu dinheiro.
+          Comece rápido e evolua aos poucos.
+        </p>
+
+        <div class="d-flex flex-column flex-sm-row gap-2">
+          <a class="btn btn-primary btn-lg" href="{% url 'login' %}">
+            <i class="bi bi-box-arrow-in-right"></i>
+            Entrar
+          </a>
+          <a class="btn btn-outline-secondary btn-lg" href="{% url 'register' %}">
+            <i class="bi bi-person-add"></i>
+            Criar Conta
+          </a>
+        </div>
+      </div>
+
+      <!-- RIGHT: resources list -->
+      <div class="col-lg-5">
+        <div class="app-card p-3 p-md-4">
+          <div class="mb-3">
+            <div class="fw-semibold">Recursos do sistema</div>
+            <div class="small muted">O essencial para o seu fluxo diário.</div>
+          </div>
+
+          <div class="vstack gap-3">
+            <div class="d-flex gap-3">
+              <div class="feature-icon"><i class="bi bi-journal-bookmark"></i></div>
+              <div>
+                <div class="fw-semibold">Notas de cursos</div>
+                <div class="small muted">Organize por curso, aula e tags. Capture rápido e refine depois.</div>
+              </div>
+            </div>
+
+            <div class="d-flex gap-3">
+              <div class="feature-icon"><i class="bi bi-cash-coin"></i></div>
+              <div>
+                <div class="fw-semibold">Financeiro pessoal</div>
+                <div class="small muted">Transações, categorias e visão mensal com saldo e resumo.</div>
+              </div>
+            </div>
+
+            <div class="d-flex gap-3">
+              <div class="feature-icon"><i class="bi bi-check2-square"></i></div>
+              <div>
+                <div class="fw-semibold">Tarefas</div>
+                <div class="small muted">Hoje/semana, projetos e prioridades. Feito para execução.</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</header>
+
+{% endblock content %}

@@ -1,0 +1,112 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}PyOrganiza - Definir Planejamento{% endblock title %}
+
+{% block extra_css %}
+<style>
+    .planning-table { font-size: 1rem; }
+    .planning-table td { padding: 0.75rem 0.5rem; }
+    .planning-table th { font-size: 0.85rem; }
+    .planning-table .form-control { font-size: 1rem; }
+</style>
+{% endblock extra_css %}
+
+{% block content %}
+
+<div class="container-fluid py-4">
+    <div class="row justify-content-center">
+        <div class="col-xl-12 col-xxl-12">
+
+            <div class="d-flex flex-column flex-md-row align-items-md-center justify-content-between gap-3 mb-4">
+                <div class="d-flex align-items-center gap-3">
+                    <div class="bg-primary bg-opacity-10 rounded-circle d-flex align-items-center justify-content-center" style="width: 48px; height: 48px;">
+                        <i class="bi bi-clipboard2-data text-primary fs-5"></i>
+                    </div>
+                    <div>
+                        <h1 class="h4 fw-bold mb-0">Definir Planejamento</h1>
+                        <p class="text-muted small mb-0">Defina os valores planejados para cada categoria</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card mb-4">
+                <div class="card-body pt-3 pb-4">
+                    <h6 class="text-uppercase text-muted small fw-bold ls-1 mb-3 d-flex align-items-center gap-2">
+                        <i class="bi bi-funnel"></i> Filtrar
+                    </h6>
+                    <form class="row g-3 align-items-end" method="get">
+                        <div class="col-md-3">
+                            <label class="form-label text-muted small fw-semibold text-uppercase ls-1">Mês</label>
+                            <select name="month" class="form-select bg-light">
+                                {% for m in months %}
+                                <option value="{{ m.0 }}" {% if m.0 == selected_month %}selected{% endif %}>{{ m.1 }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label text-muted small fw-semibold text-uppercase ls-1">Ano</label>
+                            <select name="year" class="form-select bg-light">
+                                {% for y in year_range %}
+                                <option value="{{ y }}" {% if y == selected_year %}selected{% endif %}>{{ y }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="col-md-3 d-flex gap-2">
+                            <button type="submit" class="btn btn-outline-primary d-inline-flex align-items-center gap-2 px-4 py-2">
+                                <i class="bi bi-search"></i> Carregar
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            {% if tree %}
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-transparent d-flex flex-wrap align-items-center justify-content-between gap-2">
+                    <span class="fw-semibold">
+                        Valores planejados para <span class="text-primary">{{ selected_month_name }}/{{ selected_year }}</span>
+                    </span>
+                    <span class="text-muted small">Preencha apenas as categorias filhas</span>
+                </div>
+                <div class="card-body pt-3 pb-4">
+                    <form method="post">
+                        {% csrf_token %}
+                        <input type="hidden" name="month" value="{{ selected_month }}">
+                        <input type="hidden" name="year" value="{{ selected_year }}">
+                        <div class="table-responsive">
+                            <table class="table table-hover align-middle mb-0 planning-table">
+                                <thead>
+                                    <tr>
+                                        <th class="text-muted fw-semibold text-uppercase ls-1">Categoria</th>
+                                        <th class="text-muted fw-semibold text-uppercase ls-1">Tipo</th>
+                                        <th class="text-muted fw-semibold text-uppercase ls-1 text-end" style="width: 220px;">Valor Planejado (R$)</th>
+                                    </tr>
+                                </thead>
+                                <tbody class="border-top-0">
+                                    {% include "planning/_planning_row.html" with nodes=tree level=0 %}
+                                </tbody>
+                            </table>
+                        </div>
+                        <div class="mt-4 d-flex justify-content-end">
+                            <button type="submit" class="btn btn-primary d-inline-flex align-items-center gap-2 px-5 py-2">
+                                <i class="bi bi-check-lg"></i> Salvar Planejamento
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+            {% else %}
+            <div class="text-center py-5">
+                <div class="bg-light rounded-circle d-inline-flex align-items-center justify-content-center mb-3" style="width: 64px; height: 64px;">
+                    <i class="bi bi-clipboard2-data text-muted fs-2"></i>
+                </div>
+                <p class="text-muted mb-0">Nenhuma categoria encontrada. Crie categorias primeiro.</p>
+            </div>
+            {% endif %}
+
+        </div>
+    </div>
+</div>
+
+{% endblock content %}

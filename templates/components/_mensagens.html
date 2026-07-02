@@ -1,0 +1,53 @@
+<div class="toast-container position-fixed top-0 start-50 translate-middle-x p-3" style="z-index: 1080;">
+  {% if messages %}
+    {% for message in messages %}
+        <div class="toast align-items-center
+            {% if 'error' in message.tags %}
+                text-bg-danger
+            {% elif 'success' in message.tags %}
+                text-bg-success
+            {% elif 'warning' in message.tags %}
+                text-bg-warning
+            {% else %}
+                text-bg-info
+            {% endif %}
+            border-0 mb-3"
+            role="alert"
+            aria-live="assertive"
+            aria-atomic="true"
+            data-bs-autohide="true"
+            data-bs-delay="5000">
+
+            <div class="toast-header">
+                <strong class="me-auto">
+                    {% if 'error' in message.tags %}
+                    Erro
+                    {% elif 'success' in message.tags %}
+                    Sucesso
+                    {% elif 'warning' in message.tags %}
+                    Atenção
+                    {% else %}
+                    Informação
+                    {% endif %}
+                </strong>
+                <small class="text-muted"> {% now "d/m/Y H:i" %}</small> 
+                <button type="button" class="btn-close" data-bs-dismiss="toast" aria-label="Fechar"></button>
+            </div>
+
+            <div class="toast-body">
+            {{ message }}
+            </div>
+        </div>
+        {% endfor %}
+  {% endif %}
+</div>
+
+<script>
+  document.addEventListener("DOMContentLoaded", function () {
+    const toastElList = [].slice.call(document.querySelectorAll(".toast"));
+    toastElList.forEach(function (toastEl) {
+      const toast = new bootstrap.Toast(toastEl);
+      toast.show();
+    });
+  });
+</script>

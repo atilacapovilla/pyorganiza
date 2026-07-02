@@ -1,0 +1,162 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}
+SGP - {% if course %}Alteração de {% else %}Novo {% endif %} Curso
+{% endblock title %}
+
+{% block content %}
+{% load crispy_forms_tags %}
+
+<div class="container-fluid py-4">
+    <div class="row justify-content-center">
+        <div class="col-xl-10 col-xxl-9">
+
+            <!-- Header -->
+            <div class="d-flex flex-column flex-md-row align-items-md-center justify-content-between gap-3 mb-4">
+                <div class="d-flex align-items-center gap-3">
+                    <div class="bg-primary bg-opacity-10 rounded-circle d-flex align-items-center justify-content-center" style="width: 48px; height: 48px;">
+                        <i class="bi bi-journal-bookmark-fill text-primary fs-5"></i>
+                    </div>
+                    <div>
+                        <h1 class="h4 fw-bold mb-0">
+                            {% if course %}Alteração de {% else %}Novo {% endif %} Curso
+                        </h1>
+                        <p class="text-muted small mb-0">
+                            {% if course %}Edite as informações do curso{% else %}Preencha os dados do novo curso{% endif %}
+                        </p>
+                    </div>
+                </div>
+                <a href="{% url 'courses' %}" class="btn btn-outline-secondary d-inline-flex align-items-center gap-2 px-4 py-2 rounded-3">
+                    <i class="bi bi-arrow-left"></i>
+                    <span>Voltar para Listagem</span>
+                </a>
+            </div>
+
+            <!-- Card do Formulário -->
+            <div class="card border-0 shadow-sm">
+                <div class="card-body px-4 pt-4 pb-4">
+                    <form method="POST" novalidate>
+                        {% csrf_token %}
+
+                        <!-- Seção: Informações do Curso -->
+                        <div class="mb-4">
+                            <h6 class="text-uppercase text-muted small fw-bold ls-1 mb-3 d-flex align-items-center gap-2">
+                                <i class="bi bi-journal-text"></i>
+                                Informações do Curso
+                            </h6>
+                            <div class="row g-3">
+                                <div class="col-md-12">
+                                    {{ form.title|as_crispy_field }}
+                                </div>
+                                <div class="col-md-6">
+                                    {{ form.subject|as_crispy_field }}
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Seção: Configurações -->
+                        <div class="mb-4">
+                            <h6 class="text-uppercase text-muted small fw-bold ls-1 mb-3 d-flex align-items-center gap-2">
+                                <i class="bi bi-gear"></i>
+                                Configurações
+                            </h6>
+                            <div class="row g-3">
+                                <div class="col-md-3">
+                                    {{ form.active|as_crispy_field }}
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Divider -->
+                        <hr class="my-4 opacity-25">
+
+                        <!-- Botões -->
+                        <div class="row g-3 justify-content-end">
+                            <div class="col-md-3 col-lg-2">
+                                <a href="{% url 'courses' %}" class="btn btn-outline-secondary w-100 d-inline-flex align-items-center justify-content-center gap-2 py-2">
+                                    <i class="bi bi-arrow-left"></i>
+                                    <span>Voltar</span>
+                                </a>
+                            </div>
+                            <div class="col-md-3 col-lg-2">
+                                <button type="submit" class="btn btn-primary w-100 d-inline-flex align-items-center justify-content-center gap-2 py-2">
+                                    <i class="bi bi-check-lg"></i>
+                                    <span>Salvar</span>
+                                </button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+{% endblock content %}
+{% comment %} {% extends 'base.html' %}
+{% load static %}
+{% load crispy_forms_tags %}
+
+{% block title %}
+  {% if course %}Alteração de{% else %}Novo{% endif %} Curso
+{% endblock title %}
+
+{% block content %}
+<div class="row justify-content-center">
+  <div class="col-12 col-md-9 col-lg-7">
+
+    <!-- Card header / contexto -->
+    <div class="card shadow p-2 mb-4">
+      <div class="card-body p-2 d-flex flex-column flex-md-row align-items-start align-items-md-center justify-content-between gap-3">
+        <div class="d-flex align-items-center gap-3">
+          <div>
+            <h1 class="h4 mb-1 title-aqua">
+              {% if course %}Alterar Curso{% else %}Novo Curso{% endif %}
+            </h1>
+            <div class="text-body-secondary">
+              {% if course %}
+                Atualize as informações do curso e salve as alterações.
+              {% else %}
+                Preencha os dados para criar um novo curso.
+              {% endif %}
+            </div>
+          </div>
+        </div>
+
+        <a href="{% url 'courses' %}" class="btn btn-outline-secondary px-4">
+          <i class="bi bi-arrow-left me-2"></i>
+          Voltar
+        </a>
+      </div>
+    </div>
+
+    <!-- Form -->
+    <div class="card card-soft">
+      <div class="card-body p-4 p-md-5">
+
+        <form method="post" novalidate>
+          {% csrf_token %}
+          {{ form|crispy }}
+
+          <div class="d-flex flex-column flex-md-row gap-2 gap-md-3 mt-4">
+            <button type="submit" class="btn btn-outline-primary px-4">
+              <i class="bi bi-save me-2"></i>
+              Salvar
+            </button>
+
+            <a href="{% url 'courses' %}" class="btn btn-outline-danger px-4">
+              <i class="bi bi-x-lg me-2"></i>
+              Cancelar
+            </a>
+          </div>
+
+        </form>
+
+      </div>
+    </div>
+
+  </div>
+</div>
+{% endblock content %} {% endcomment %}
