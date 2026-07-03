@@ -1,11 +1,11 @@
+from django.conf import settings
 from django.db import models
-from django.contrib.auth.models import User
 
 from apps.finance.models.category import Category
 
 
 class Planning(models.Model):
-    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
     month = models.IntegerField(verbose_name="Mês")
     year = models.IntegerField(verbose_name="Ano")
     category = models.ForeignKey(

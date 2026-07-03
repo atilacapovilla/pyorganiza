@@ -1,6 +1,6 @@
-import sweetify
-
+from django.contrib import messages
 from django.contrib.auth.decorators import login_required
+from django.db import transaction
 from django.shortcuts import redirect
 from django.shortcuts import render
 
@@ -9,6 +9,7 @@ from apps.finance.models.transaction import Transaction
 
 
 @login_required
+@transaction.atomic
 def Transfer(request):
     template_name = "transfer/transfer_form.html"
     form = TransferForm(request.user, request.POST or None)
@@ -22,7 +23,7 @@ def Transfer(request):
             transaction_value = form.cleaned_data.get("transaction_value")
             description = form.cleaned_data.get("description")
 
-            transction = Transaction(
+            Transaction.objects.create(
                 due_date=transaction_date,
                 transaction_date=transaction_date,
                 account_id=account_origin,
@@ -33,9 +34,8 @@ def Transfer(request):
                 is_paid=True,
                 user=request.user,
             )
-            transction.save()
 
-            transction = Transaction(
+            Transaction.objects.create(
                 due_date=transaction_date,
                 transaction_date=transaction_date,
                 account_id=account_destination,
@@ -46,13 +46,10 @@ def Transfer(request):
                 is_paid=True,
                 user=request.user,
             )
-            transction.save()
-            sweetify.toast(
+
+            messages.success(
                 request,
-                "Tranferancia concluida com sucesso",
-                icon="success",
-                button="OK",
-                timer=2000,
+                "Transferência concluída com sucesso",
             )
 
             return redirect("transactions")

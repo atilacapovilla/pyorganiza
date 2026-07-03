@@ -1,9 +1,10 @@
-from apps.course.models import *
+from django.conf import settings
+from django.db import models
 
 
 class Subject(models.Model):
     title = models.CharField(max_length=50)
-    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     active = models.BooleanField(default=True)

@@ -1,5 +1,3 @@
-import sweetify
-
 from django.contrib import messages
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.shortcuts import render
@@ -53,7 +51,7 @@ class CourseCreate(LoginRequiredMixin, CreateView):
 
     def form_valid(self, form):
         form.instance.user = self.request.user
-        messages.success(self.request, 'O Curso foi criado com suceso.')
+        messages.success(self.request, 'O Curso foi criado com sucesso.')
         return super(CourseCreate, self).form_valid(form)
 
 

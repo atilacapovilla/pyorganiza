@@ -62,8 +62,6 @@ def get_finance_accounts_balance(request):
             or 0
         )
         balance = account.opening_balance + incomes - expenses
-        account.current_balance = balance
-        account.save()
         balance_total += balance
 
     accounts_other = (
@@ -88,8 +86,6 @@ def get_finance_accounts_balance(request):
             or 0
         )
         balance = account.opening_balance + incomes - expenses
-        account.current_balance = balance
-        account.save()
 
     finance_accounts_balance = dict(
         accounts=accounts,

@@ -1,10 +1,10 @@
+from django.conf import settings
 from django.db import models
-from django.contrib.auth.models import User
 from PIL import Image
 
 
 class Profile(models.Model):
-    user = models.OneToOneField(User, on_delete=models.CASCADE)
+    user = models.OneToOneField(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
     avatar = models.ImageField(default="avatar.jpg", upload_to="profile_avatars")
 
     def __str__(self):
@@ -12,8 +12,11 @@ class Profile(models.Model):
 
     def save(self, *args, **kwargs):
         super().save(*args, **kwargs)
-        img = Image.open(self.avatar.path)
-        if img.height > 300 or img.width > 300:
-            output_size = (300, 300)
-            img.thumbnail(output_size)
-            img.save(self.avatar.path)
+        try:
+            img = Image.open(self.avatar.path)
+            if img.height > 300 or img.width > 300:
+                output_size = (300, 300)
+                img.thumbnail(output_size)
+                img.save(self.avatar.path)
+        except (FileNotFoundError, ValueError):
+            pass

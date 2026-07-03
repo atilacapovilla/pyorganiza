@@ -13,7 +13,7 @@ from apps.finance.models.transaction import Transaction
 
 
 class TransactionList(LoginRequiredMixin, ListView):
-    model = TransactionForm
+    model = Transaction
     context_object_name = "transactions"
     template_name = "transaction/transaction_list.html"
     paginate_by = 100

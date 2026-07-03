@@ -1,4 +1,10 @@
-from apps.finance.models import *
+from datetime import datetime
+
+from django.conf import settings
+from django.db import models
+
+from apps.finance.models.account import Account
+from apps.finance.models.category import Category
 
 
 class Transaction(models.Model):
@@ -29,7 +35,7 @@ class Transaction(models.Model):
     type = models.CharField(
         max_length=1, choices=TYPE_CHOICE, default="D", verbose_name="Tipo"
     )
-    user = models.ForeignKey(User, on_delete=models.CASCADE, verbose_name="Usuário")
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, verbose_name="Usuário")
     created_at = models.DateTimeField(auto_now_add=True, verbose_name="Criado em")
     updated_at = models.DateTimeField(auto_now=True, verbose_name="Alterado em")
     active = models.BooleanField("Categoria Ativa", default=True)

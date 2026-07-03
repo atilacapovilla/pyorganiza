@@ -91,7 +91,8 @@ def planning_definir(request):
     ]
 
     months_list = [(i + 1, name) for i, name in enumerate(month_names)]
-    year_range = range(2020, 2036)
+    today = date.today()
+    year_range = range(today.year - 5, today.year + 6)
 
     context = {
         "tree": tree,
@@ -194,7 +195,7 @@ def planning_consulta(request):
         "Setembro", "Outubro", "Novembro", "Dezembro",
     ]
     months_list = [(i + 1, name) for i, name in enumerate(month_names)]
-    year_range = range(2020, 2036)
+    year_range = range(today.year - 5, today.year + 6)
 
     for tname in totals:
         p = totals[tname]["planned"]

@@ -1,7 +1,9 @@
 import markdown
+from django.conf import settings
+from django.db import models
 from django.utils.safestring import mark_safe
 
-from apps.course.models import *
+from apps.course.models.course import Course
 
 
 class Note(models.Model):
@@ -9,7 +11,7 @@ class Note(models.Model):
     order = models.IntegerField()
     content = models.TextField()
     course = models.ForeignKey(Course, on_delete=models.CASCADE, related_name="notes")
-    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     active = models.BooleanField(default=True)

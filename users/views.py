@@ -65,5 +65,5 @@ class MyProfile(LoginRequiredMixin, View):
             return redirect("profile")
         else:
             context = {"user_form": user_form, "profile_form": profile_form}
-            messages.error(request, "Erro atualizando seu perfial")
+            messages.error(request, "Erro atualizando seu perfil")
             return render(request, "users/profile.html", context)

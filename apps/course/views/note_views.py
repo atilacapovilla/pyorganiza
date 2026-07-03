@@ -1,4 +1,3 @@
-import sweetify
 from django.contrib import messages
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.staticfiles import finders
@@ -66,7 +65,7 @@ class NoteUpdate(LoginRequiredMixin, UpdateView):
     form_class = NoteForm
 
     def form_valid(self, form):
-        messages.success(self.request, 'A Anotação foi alterada com suceso.')
+        messages.success(self.request, 'A Anotação foi alterada com sucesso.')
         return super(NoteUpdate, self).form_valid(form)
 
     def get_queryset(self):
@@ -83,21 +82,20 @@ class NoteDelete(LoginRequiredMixin, DeleteView):
     template_name = "note/note_confirm_delete.html"
 
     def form_valid(self, form):
-        messages.success(self.request, 'A Anotação foi excluida com suceso.')
+        messages.success(self.request, 'A Anotação foi excluida com sucesso.')
         return super().form_valid(form)
 
     def get_queryset(self):
         return super().get_queryset().filter(user=self.request.user)
 
     def get_success_url(self):
-        return reverse_lazy("note-detail", kwargs={"pk": self.object.pk})
+        return reverse_lazy("note-list")
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
 
         context["course_id"] = self.object.course_id
-        context["back_url"] = reverse_lazy(
-            "note-detail", kwargs={"pk": self.object.pk})
+        context["back_url"] = reverse_lazy("note-list")
         context["page_title"] = "Editar Anotação"
         context["submit_label"] = "Atualizar"
 
