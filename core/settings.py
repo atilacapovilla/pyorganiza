@@ -144,6 +144,15 @@ MESSAGE_TAGS = {
 LOGIN_URL = "login"
 SESSION_EXPIRE_AT_BROWSER_CLOSE = True
 
+# Configurações de segurança para produção (ativar quando tiver SSL/domínio)
+# SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
+# SECURE_SSL_REDIRECT = True
+# SESSION_COOKIE_SECURE = True
+# CSRF_COOKIE_SECURE = True
+# SECURE_HSTS_SECONDS = 31536000
+# SECURE_HSTS_INCLUDE_SUBDOMAINS = True
+# SECURE_HSTS_PRELOAD = True
+
 # Se tiver configuração de email
 # EMAIL_HOST = 'smtp.gmail.com'
 # EMAIL_HOST_USER = ''

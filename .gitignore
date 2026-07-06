@@ -26,7 +26,7 @@ wheels/
 MANIFEST
 deploy.md
 requirements-dev.txt
-docs/
+docs/_build/
 
 # PyInstaller
 #  Usually these files are written by a python script from a template
@@ -58,6 +58,8 @@ coverage.xml
 *.log
 local_settings.py
 db.sqlite3
+staticfiles/
+media/
 
 # Flask stuff:
 instance/

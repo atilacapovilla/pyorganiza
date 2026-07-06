@@ -534,7 +534,7 @@ body {
     padding: 2rem;
     transition: margin-left 0.3s ease;
     min-height: calc(100vh - 70px);
-    min-width: calc(100vw - 260px);
+    overflow-x: hidden;
 }
 
 .main-content.sidebar-collapsed {
@@ -1096,6 +1096,24 @@ body {
     background-color: var(--accent-color);
     border-color: var(--accent-color);
     color: #fff;
+}
+
+/* Note content: evitar overflow de imagens, tabelas e codigo */
+.note-content img {
+    max-width: 100%;
+    height: auto;
+}
+
+.note-content table {
+    display: block;
+    max-width: 100%;
+    overflow-x: auto;
+    white-space: nowrap;
+}
+
+.note-content pre {
+    white-space: pre-wrap;
+    word-break: break-word;
 }
 
 /* badges dentro da list */
