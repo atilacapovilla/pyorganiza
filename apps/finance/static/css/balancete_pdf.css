@@ -141,6 +141,11 @@ p.small {
     color: #1565c0;
 }
 
+.type-badge.transitoria {
+    background-color: #fff3e0;
+    color: #e65100;
+}
+
 .debito {
     color: #d32f2f;
 }

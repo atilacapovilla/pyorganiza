@@ -96,7 +96,7 @@
                 <div class="card-body pt-3 pb-4">
                     {% if transactions %}
                     <div class="table-responsive">
-                        <table class="table table-hover align-middle mb-0">
+                        <table class="table table-custom-14 table-hover align-middle mb-0">
                             <thead>
                                 <tr>
                                     <th class="text-muted small fw-semibold text-uppercase ls-1">Data</th>
@@ -128,12 +128,14 @@
                                         {% endif %}
                                     </td>
                                     <td class="text-end">
-                                        <a href="{% url 'transaction-update' transaction.id %}" class="btn btn-sm btn-outline-primary" title="Editar">
-                                            <i class="bi bi-pencil-square"></i>
-                                        </a>
-                                        <a href="{% url 'transaction-delete' transaction.id %}" class="btn btn-sm btn-outline-danger" title="Excluir">
-                                            <i class="bi bi-trash"></i>
-                                        </a>
+                                        <div class="btn-group" role="group">
+                                            <a href="{% url 'transaction-update' transaction.id %}" class="btn btn-sm btn-outline-primary me-2" title="Editar">
+                                                <i class="bi bi-pencil-square"></i>
+                                            </a>
+                                            <a href="{% url 'transaction-delete' transaction.id %}" class="btn btn-sm btn-outline-danger" title="Excluir">
+                                                <i class="bi bi-trash"></i>
+                                            </a>
+                                        </div>
                                     </td>
                                 </tr>
                                 {% endfor %}

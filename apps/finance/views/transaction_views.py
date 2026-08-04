@@ -31,12 +31,14 @@ class TransactionList(LoginRequiredMixin, ListView):
             )
 
         transactions = Transaction.objects.filter(
-            user=self.request.user, transaction_date__range=[start_date, end_date]
+            user=self.request.user, transaction_date__range=[
+                start_date, end_date]
         ).order_by("-transaction_date", "-due_date", "-created_at")
 
         if account:
             transactions = transactions.filter(account__id=account)
 
+        print("Teste ========>", transactions)
         return transactions
 
     def get_context_data(self, **kwargs):

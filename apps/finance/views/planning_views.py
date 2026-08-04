@@ -16,7 +16,7 @@ from apps.finance.models.transaction import Transaction
 
 
 def _get_leaf_categories(user):
-    all_cats = Category.objects.filter(user=user)
+    all_cats = Category.objects.filter(user=user).exclude(category_type="transitoria")
     leaf_ids = []
     for cat in all_cats:
         has_children = all_cats.filter(parent=cat).exists()
@@ -74,7 +74,7 @@ def planning_definir(request):
     month = int(re.sub(r"\D", "", request.GET.get("month", str(today.month))) or today.month)
     year = int(re.sub(r"\D", "", request.GET.get("year", str(today.year))) or today.year)
 
-    categories = Category.objects.filter(user=request.user)
+    categories = Category.objects.filter(user=request.user).exclude(category_type="transitoria")
 
     existing = {}
     for p in Planning.objects.filter(
@@ -154,6 +154,7 @@ def _sum_totals_by_type(nodes):
         "receita": {"planned": 0, "actual": 0},
         "despesa": {"planned": 0, "actual": 0},
         "investimento": {"planned": 0, "actual": 0},
+        "transitoria": {"planned": 0, "actual": 0},
     }
     def walk(items):
         for item in items:
@@ -172,7 +173,7 @@ def planning_consulta(request):
     month = int(re.sub(r"\D", "", request.GET.get("month", str(today.month))) or today.month)
     year = int(re.sub(r"\D", "", request.GET.get("year", str(today.year))) or today.year)
 
-    categories = Category.objects.filter(user=request.user)
+    categories = Category.objects.filter(user=request.user).exclude(category_type="transitoria")
 
     planned = {}
     for p in Planning.objects.filter(user=request.user, month=month, year=year):
@@ -226,7 +227,7 @@ def planning_consulta_pdf(request):
     month = int(re.sub(r"\D", "", request.GET.get("month", str(today.month))) or today.month)
     year = int(re.sub(r"\D", "", request.GET.get("year", str(today.year))) or today.year)
 
-    categories = Category.objects.filter(user=request.user)
+    categories = Category.objects.filter(user=request.user).exclude(category_type="transitoria")
 
     planned = {}
     for p in Planning.objects.filter(user=request.user, month=month, year=year):

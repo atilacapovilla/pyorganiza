@@ -142,6 +142,8 @@
             <div class="modal-body">
                 <form method="POST">
                     {% csrf_token %}
+                    <input type="hidden" name="account" value="{{ request.GET.account }}">
+                    <input type="hidden" name="due_date" value="{{ request.GET.due_date }}">
                     <div class="mb-3">
                         <label for="account-debit" class="form-label">Conta para Débito</label>
                         <select class="form-select" name="account_debit">

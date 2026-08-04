@@ -1128,3 +1128,9 @@ body {
 [data-theme="dark"] .small {
     color: var(--text-secondary) !important;
 }
+
+/* tamango customizado de tabelas */
+.table-custom-16 { font-size: 16px; }
+.table-custom-14 { font-size: 14px; }
+.table-custom-12 { font-size: 12px; }
+.table-custom-10 { font-size: 10px; }

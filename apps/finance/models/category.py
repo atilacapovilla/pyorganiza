@@ -15,8 +15,10 @@ class Category(models.Model):
 
     category_type = models.CharField(
         max_length=15,
-        choices=[('receita', 'Receita'), ('despesa', 'Despesa'),
-                 ('investimento', 'Investimentos')],
+        choices=[('receita', 'Receita'),
+                 ('despesa', 'Despesa'),
+                 ('investimento', 'Investimentos'),
+                 ('transitoria', 'Transitória')],
         verbose_name="Tipo de Categoria"
     )
 

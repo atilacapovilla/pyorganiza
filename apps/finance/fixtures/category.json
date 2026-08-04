@@ -5,9 +5,10 @@
     "fields": {
       "user": 1,
       "name": "Receitas",
+      "color": "#1565C0",
       "category_type": "receita",
       "essential": false,
-      "metod_503020": "20",
+      "metod_503020": "",
       "parent": null
     }
   },
@@ -16,11 +17,12 @@
     "pk": 2,
     "fields": {
       "user": 1,
-      "name": "Salário",
-      "category_type": "receita",
-      "essential": true,
-      "metod_503020": "20",
-      "parent": 1
+      "name": "Despesas",
+      "color": "#C62828",
+      "category_type": "despesa",
+      "essential": false,
+      "metod_503020": "",
+      "parent": null
     }
   },
   {
@@ -28,7 +30,8 @@
     "pk": 3,
     "fields": {
       "user": 1,
-      "name": "Freelance / Bicos",
+      "name": "Salário",
+      "color": "#1976D2",
       "category_type": "receita",
       "essential": true,
       "metod_503020": "20",
@@ -40,9 +43,10 @@
     "pk": 4,
     "fields": {
       "user": 1,
-      "name": "Investimentos",
+      "name": "Freelance / Bicos",
+      "color": "#2196F3",
       "category_type": "receita",
-      "essential": false,
+      "essential": true,
       "metod_503020": "20",
       "parent": 1
     }
@@ -52,31 +56,8 @@
     "pk": 5,
     "fields": {
       "user": 1,
-      "name": "Dividendos",
-      "category_type": "receita",
-      "essential": false,
-      "metod_503020": "20",
-      "parent": 4
-    }
-  },
-  {
-    "model": "finance.category",
-    "pk": 6,
-    "fields": {
-      "user": 1,
-      "name": "Juros de Poupança",
-      "category_type": "receita",
-      "essential": false,
-      "metod_503020": "20",
-      "parent": 4
-    }
-  },
-  {
-    "model": "finance.category",
-    "pk": 7,
-    "fields": {
-      "user": 1,
-      "name": "Aluguel Recebido",
+      "name": "Investimentos",
+      "color": "#388E3C",
       "category_type": "receita",
       "essential": false,
       "metod_503020": "20",
@@ -85,14 +66,67 @@
   },
   {
     "model": "finance.category",
-    "pk": 10,
+    "pk": 6,
+    "fields": {
+      "user": 1,
+      "name": "Dividendos",
+      "color": "#43A047",
+      "category_type": "receita",
+      "essential": false,
+      "metod_503020": "20",
+      "parent": 1
+    }
+  },
+  {
+    "model": "finance.category",
+    "pk": 7,
+    "fields": {
+      "user": 1,
+      "name": "Juros de Poupança",
+      "color": "#2E7D32",
+      "category_type": "receita",
+      "essential": false,
+      "metod_503020": "20",
+      "parent": 1
+    }
+  },
+  {
+    "model": "finance.category",
+    "pk": 8,
+    "fields": {
+      "user": 1,
+      "name": "Aluguel Recebido",
+      "color": "#1B5E20",
+      "category_type": "receita",
+      "essential": false,
+      "metod_503020": "20",
+      "parent": 1
+    }
+  },
+  {
+    "model": "finance.category",
+    "pk": 9,
     "fields": {
       "user": 1,
       "name": "Moradia",
+      "color": "#E53935",
       "category_type": "despesa",
       "essential": true,
       "metod_503020": "50",
-      "parent": null
+      "parent": 2
+    }
+  },
+  {
+    "model": "finance.category",
+    "pk": 10,
+    "fields": {
+      "user": 1,
+      "name": "Aluguel / Financiamento",
+      "color": "#D32F2F",
+      "category_type": "despesa",
+      "essential": true,
+      "metod_503020": "50",
+      "parent": 2
     }
   },
   {
@@ -100,11 +134,12 @@
     "pk": 11,
     "fields": {
       "user": 1,
-      "name": "Aluguel / Financiamento",
+      "name": "Energia Elétrica",
+      "color": "#FF5722",
       "category_type": "despesa",
       "essential": true,
       "metod_503020": "50",
-      "parent": 10
+      "parent": 2
     }
   },
   {
@@ -112,11 +147,12 @@
     "pk": 12,
     "fields": {
       "user": 1,
-      "name": "Energia Elétrica",
+      "name": "Água / Gás / Internet",
+      "color": "#FF9800",
       "category_type": "despesa",
       "essential": true,
       "metod_503020": "50",
-      "parent": 10
+      "parent": 2
     }
   },
   {
@@ -124,11 +160,90 @@
     "pk": 13,
     "fields": {
       "user": 1,
-      "name": "Água / Gás / Internet",
+      "name": "Alimentação",
+      "color": "#F44336",
       "category_type": "despesa",
       "essential": true,
       "metod_503020": "50",
-      "parent": 10
+      "parent": 2
+    }
+  },
+  {
+    "model": "finance.category",
+    "pk": 14,
+    "fields": {
+      "user": 1,
+      "name": "Supermercado",
+      "color": "#EF5350",
+      "category_type": "despesa",
+      "essential": true,
+      "metod_503020": "50",
+      "parent": 2
+    }
+  },
+  {
+    "model": "finance.category",
+    "pk": 15,
+    "fields": {
+      "user": 1,
+      "name": "Delivery / Alimentação Fora",
+      "color": "#FF7043",
+      "category_type": "despesa",
+      "essential": true,
+      "metod_503020": "50",
+      "parent": 2
+    }
+  },
+  {
+    "model": "finance.category",
+    "pk": 16,
+    "fields": {
+      "user": 1,
+      "name": "Transporte",
+      "color": "#9C27B0",
+      "category_type": "despesa",
+      "essential": true,
+      "metod_503020": "50",
+      "parent": 2
+    }
+  },
+  {
+    "model": "finance.category",
+    "pk": 17,
+    "fields": {
+      "user": 1,
+      "name": "Combustível",
+      "color": "#AB47BC",
+      "category_type": "despesa",
+      "essential": true,
+      "metod_503020": "50",
+      "parent": 2
+    }
+  },
+  {
+    "model": "finance.category",
+    "pk": 18,
+    "fields": {
+      "user": 1,
+      "name": "Transporte Público",
+      "color": "#7B1FA2",
+      "category_type": "despesa",
+      "essential": true,
+      "metod_503020": "50",
+      "parent": 2
+    }
+  },
+  {
+    "model": "finance.category",
+    "pk": 19,
+    "fields": {
+      "user": 1,
+      "name": "Saúde",
+      "color": "#E91E63",
+      "category_type": "despesa",
+      "essential": true,
+      "metod_503020": "50",
+      "parent": 2
     }
   },
   {
@@ -136,11 +251,12 @@
     "pk": 20,
     "fields": {
       "user": 1,
-      "name": "Alimentação",
+      "name": "Plano de Saúde",
+      "color": "#EC407A",
       "category_type": "despesa",
       "essential": true,
       "metod_503020": "50",
-      "parent": null
+      "parent": 2
     }
   },
   {
@@ -148,11 +264,12 @@
     "pk": 21,
     "fields": {
       "user": 1,
-      "name": "Supermercado",
+      "name": "Medicamentos",
+      "color": "#AD1457",
       "category_type": "despesa",
       "essential": true,
       "metod_503020": "50",
-      "parent": 20
+      "parent": 2
     }
   },
   {
@@ -160,11 +277,103 @@
     "pk": 22,
     "fields": {
       "user": 1,
-      "name": "Delivery / Alimentação Fora",
+      "name": "Educação",
+      "color": "#BF360C",
       "category_type": "despesa",
       "essential": true,
       "metod_503020": "50",
-      "parent": 20
+      "parent": 2
+    }
+  },
+  {
+    "model": "finance.category",
+    "pk": 23,
+    "fields": {
+      "user": 1,
+      "name": "Mensalidade Escolar / Faculdade",
+      "color": "#D84315",
+      "category_type": "despesa",
+      "essential": true,
+      "metod_503020": "50",
+      "parent": 2
+    }
+  },
+  {
+    "model": "finance.category",
+    "pk": 24,
+    "fields": {
+      "user": 1,
+      "name": "Lazer",
+      "color": "#8E24AA",
+      "category_type": "despesa",
+      "essential": false,
+      "metod_503020": "30",
+      "parent": 2
+    }
+  },
+  {
+    "model": "finance.category",
+    "pk": 25,
+    "fields": {
+      "user": 1,
+      "name": "Viagens",
+      "color": "#CE93D8",
+      "category_type": "despesa",
+      "essential": false,
+      "metod_503020": "30",
+      "parent": 2
+    }
+  },
+  {
+    "model": "finance.category",
+    "pk": 26,
+    "fields": {
+      "user": 1,
+      "name": "Streaming / Assinaturas",
+      "color": "#BA68C8",
+      "category_type": "despesa",
+      "essential": false,
+      "metod_503020": "30",
+      "parent": 2
+    }
+  },
+  {
+    "model": "finance.category",
+    "pk": 27,
+    "fields": {
+      "user": 1,
+      "name": "Restaurantes / Lanches",
+      "color": "#FF6F00",
+      "category_type": "despesa",
+      "essential": false,
+      "metod_503020": "30",
+      "parent": 2
+    }
+  },
+  {
+    "model": "finance.category",
+    "pk": 28,
+    "fields": {
+      "user": 1,
+      "name": "Vestuário",
+      "color": "#D500F9",
+      "category_type": "despesa",
+      "essential": false,
+      "metod_503020": "30",
+      "parent": 2
+    }
+  },
+  {
+    "model": "finance.category",
+    "pk": 29,
+    "fields": {
+      "user": 1,
+      "name": "Roupas",
+      "color": "#E040FB",
+      "category_type": "despesa",
+      "essential": false,
+      "metod_503020": "30",
+      "parent": 2
     }
   },
   {
@@ -172,11 +381,12 @@
     "pk": 30,
     "fields": {
       "user": 1,
-      "name": "Transporte",
+      "name": "Calçados / Acessórios",
+      "color": "#AA00FF",
       "category_type": "despesa",
-      "essential": true,
-      "metod_503020": "50",
-      "parent": null
+      "essential": false,
+      "metod_503020": "30",
+      "parent": 2
     }
   },
   {
@@ -184,11 +394,12 @@
     "pk": 31,
     "fields": {
       "user": 1,
-      "name": "Combustível",
+      "name": "Poupança e Investimentos",
+      "color": "#6A1B9A",
       "category_type": "despesa",
-      "essential": true,
-      "metod_503020": "50",
-      "parent": 30
+      "essential": false,
+      "metod_503020": "20",
+      "parent": 2
     }
   },
   {
@@ -196,191 +407,77 @@
     "pk": 32,
     "fields": {
       "user": 1,
-      "name": "Transporte Público",
-      "category_type": "despesa",
-      "essential": true,
-      "metod_503020": "50",
-      "parent": 30
-    }
-  },
-  {
-    "model": "finance.category",
-    "pk": 40,
-    "fields": {
-      "user": 1,
-      "name": "Saúde",
-      "category_type": "despesa",
-      "essential": true,
-      "metod_503020": "50",
-      "parent": null
-    }
-  },
-  {
-    "model": "finance.category",
-    "pk": 41,
-    "fields": {
-      "user": 1,
-      "name": "Plano de Saúde",
-      "category_type": "despesa",
-      "essential": true,
-      "metod_503020": "50",
-      "parent": 40
-    }
-  },
-  {
-    "model": "finance.category",
-    "pk": 42,
-    "fields": {
-      "user": 1,
-      "name": "Medicamentos",
-      "category_type": "despesa",
-      "essential": true,
-      "metod_503020": "50",
-      "parent": 40
-    }
-  },
-  {
-    "model": "finance.category",
-    "pk": 50,
-    "fields": {
-      "user": 1,
-      "name": "Educação",
-      "category_type": "despesa",
-      "essential": true,
-      "metod_503020": "50",
-      "parent": null
-    }
-  },
-  {
-    "model": "finance.category",
-    "pk": 51,
-    "fields": {
-      "user": 1,
-      "name": "Mensalidade Escolar / Faculdade",
-      "category_type": "despesa",
-      "essential": true,
-      "metod_503020": "50",
-      "parent": 50
-    }
-  },
-  {
-    "model": "finance.category",
-    "pk": 60,
-    "fields": {
-      "user": 1,
-      "name": "Lazer",
-      "category_type": "despesa",
-      "essential": false,
-      "metod_503020": "30",
-      "parent": null
-    }
-  },
-  {
-    "model": "finance.category",
-    "pk": 61,
-    "fields": {
-      "user": 1,
-      "name": "Viagens",
-      "category_type": "despesa",
-      "essential": false,
-      "metod_503020": "30",
-      "parent": 60
-    }
-  },
-  {
-    "model": "finance.category",
-    "pk": 62,
-    "fields": {
-      "user": 1,
-      "name": "Streaming / Assinaturas",
-      "category_type": "despesa",
-      "essential": false,
-      "metod_503020": "30",
-      "parent": 60
-    }
-  },
-  {
-    "model": "finance.category",
-    "pk": 63,
-    "fields": {
-      "user": 1,
-      "name": "Restaurantes / Lanches",
-      "category_type": "despesa",
-      "essential": false,
-      "metod_503020": "30",
-      "parent": 60
-    }
-  },
-  {
-    "model": "finance.category",
-    "pk": 70,
-    "fields": {
-      "user": 1,
-      "name": "Vestuário",
-      "category_type": "despesa",
-      "essential": false,
-      "metod_503020": "30",
-      "parent": null
-    }
-  },
-  {
-    "model": "finance.category",
-    "pk": 71,
-    "fields": {
-      "user": 1,
-      "name": "Roupas",
-      "category_type": "despesa",
-      "essential": false,
-      "metod_503020": "30",
-      "parent": 70
-    }
-  },
-  {
-    "model": "finance.category",
-    "pk": 72,
-    "fields": {
-      "user": 1,
-      "name": "Calçados / Acessórios",
-      "category_type": "despesa",
-      "essential": false,
-      "metod_503020": "30",
-      "parent": 70
-    }
-  },
-  {
-    "model": "finance.category",
-    "pk": 80,
-    "fields": {
-      "user": 1,
-      "name": "Poupança e Investimentos",
-      "category_type": "despesa",
-      "essential": false,
-      "metod_503020": "20",
-      "parent": null
-    }
-  },
-  {
-    "model": "finance.category",
-    "pk": 81,
-    "fields": {
-      "user": 1,
       "name": "Aportes em Fundos / Ações",
+      "color": "#4A148C",
       "category_type": "despesa",
       "essential": false,
       "metod_503020": "20",
-      "parent": 80
+      "parent": 2
     }
   },
   {
     "model": "finance.category",
-    "pk": 82,
+    "pk": 33,
     "fields": {
       "user": 1,
       "name": "Reserva de Emergência",
+      "color": "#311B92",
       "category_type": "despesa",
       "essential": false,
       "metod_503020": "20",
-      "parent": 80
+      "parent": 2
+    }
+  },
+  {
+    "model": "finance.category",
+    "pk": 34,
+    "fields": {
+      "user": 1,
+      "name": "Transitórias",
+      "color": "#E65100",
+      "category_type": "transitoria",
+      "essential": false,
+      "metod_503020": null,
+      "parent": null
+    }
+  },
+  {
+    "model": "finance.category",
+    "pk": 35,
+    "fields": {
+      "user": 1,
+      "name": "Rateio / Reembolso",
+      "color": "#FF9800",
+      "category_type": "transitoria",
+      "essential": false,
+      "metod_503020": null,
+      "parent": 34
+    }
+  },
+  {
+    "model": "finance.category",
+    "pk": 36,
+    "fields": {
+      "user": 1,
+      "name": "Transferência entre Contas",
+      "color": "#FFB74D",
+      "category_type": "transitoria",
+      "essential": false,
+      "metod_503020": null,
+      "parent": 34
+    }
+  },
+  {
+    "model": "finance.category",
+    "pk": 37,
+    "fields": {
+      "user": 1,
+      "name": "Pagamento de Cartão",
+      "color": "#FFA726",
+      "category_type": "transitoria",
+      "essential": false,
+      "metod_503020": null,
+      "parent": 34
     }
   }
 ]

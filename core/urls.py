@@ -22,6 +22,7 @@ urlpatterns = [
     path("", include("apps.finance.urls.extrato_urls")),
     path("", include("apps.finance.urls.balancete_urls")),
     path("", include("apps.finance.urls.planning_urls")),
+    path("", include("apps.finance.urls.import_urls")),
     path("", include("users.urls")),
 ]
 

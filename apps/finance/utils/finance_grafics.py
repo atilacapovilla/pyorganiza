@@ -20,6 +20,7 @@ def get_finance_expense_month(request, month, year):
             transaction_date__year=year,
             transaction_date__month=month,
         )
+        .exclude(category__category_type="transitoria")
         .order_by("-total_expenses")
     )
 
@@ -59,7 +60,7 @@ def get_finance_incomes_expense_year(request, year):
 
     transactions = Transaction.objects.filter(
         user=request.user, transaction_date__year=year
-    )
+    ).exclude(category__category_type="transitoria")
 
     for date in dates:
         expense = (

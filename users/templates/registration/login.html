@@ -12,18 +12,36 @@
 </head>
 <body class="d-flex align-items-center" style="min-height: 100vh;" data-bs-theme="dark">
     <div class="container">
-        <div class="row justify-content-center">
-            <div class="col-md-5 col-lg-4">
+        <div class="row justify-content-center align-items-center" style="min-height: 80vh;">
 
-                <!-- Logo -->
+            <!-- Coluna da esquerda: Aviso -->
+            <div class="col-md-5 col-lg-4 mb-4 mb-md-0">
+                <!-- Aviso de teste -->
+                <div class="card shadow-sm border-0">
+                    <div class="card-body p-4">
+                        <div class="alert alert-warning text-center mb-0 py-3" role="alert">
+                            <i class="bi bi-exclamation-triangle-fill me-1"></i>
+                            <strong>⚠ AMBIENTE DE TESTES ⚠</strong><br>
+                            <span class="small">Este sistema é exclusivamente para <strong>fins de demonstração e teste</strong>.</span><br><br>
+                            <span class="small"><strong>NÃO</strong> utilize dados reais, pessoais ou sensíveis. Qualquer informação inserida será <strong>pública e temporária</strong>, podendo ser removida ou visualizada por terceiros a qualquer momento, sem aviso prévio.</span><br><br>
+                            <span class="small">O uso deste sistema é de <strong>total responsabilidade do usuário</strong>. Os desenvolvedores não se responsabilizam por perdas, vazamentos ou danos decorrentes do uso.</span><br><br>
+                            <hr class="my-2">
+                            <span class="fw-semibold">Usuário de teste:</span> admin<br>
+                            <span class="fw-semibold">Senha:</span> 123456
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Coluna da direita: Login -->
+            <div class="col-md-5 col-lg-4">
                 <div class="text-center mb-4">
                     <i class="bi bi-boxes logo-aqua" style="font-size: 3rem;"></i>
                     <div style="font-size: 1.75rem; font-weight: 700;">
                         <span class="logo-aqua">Py</span><span>Organiza</span>
                     </div>
+                    <p class="text-muted small mt-2">Sistema de Gestão Financeira e Acadêmica</p>
                 </div>
-
-                <!-- Card -->
                 <div class="card shadow-sm border-0">
                     <div class="card-body p-4">
                         <h4 class="card-title text-center mb-1">Bem-vindo de volta</h4>
@@ -42,25 +60,29 @@
 
                             <hr>
                             <div class="text-center">
+                                {% comment %}
                                 <div class="mb-2">
                                     <a href="{% url 'password-reset' %}" class="text-decoration-none small">
                                         Esqueceu sua senha?
                                     </a>
                                 </div>
+                                {% endcomment %}
+                                {% comment %}
                                 <div>
                                     <span class="text-muted small">Não tem uma conta?</span>
                                     <a href="{% url 'register' %}" class="fw-semibold text-decoration-none small">
                                         Registre-se
                                     </a>
                                 </div>
+                                {% endcomment %}
                             </div>
                         </form>
                     </div>
                 </div>
-
-                <p class="text-center text-muted small mt-4 mb-0">© 2026 PyOrganiza. Todos os direitos reservados.</p>
             </div>
+
         </div>
+        <p class="text-center text-muted small mt-4 mb-0">© 2026 PyOrganiza. Todos os direitos reservados.</p>
     </div>
     <script src="{% static 'js/bootstrap.bundle.min.js' %}"></script>
 </body>

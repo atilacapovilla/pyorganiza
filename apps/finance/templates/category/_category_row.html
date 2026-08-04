@@ -28,13 +28,15 @@
       <td colspan="3" class="text-muted"></td>
     {% endif %}
 
-    <td class="table-col-acoes">
-      <a href="{% url 'category-update' category.id %}" class="btn btn-outline-primary btn-sm me-1" title="Editar">
-        <i class="bi bi-pencil-square"></i>
-      </a>
-      <a href="{% url 'category-delete' category.id %}" class="btn btn-outline-danger btn-sm" title="Excluir">
-        <i class="bi bi-trash"></i>
-      </a>
+    <td class="text-end">
+      <div class="btn-group" role="group">
+        <a href="{% url 'category-update' category.id %}" class="btn btn-outline-primary btn-sm me-2" title="Editar">
+          <i class="bi bi-pencil-square"></i>
+        </a>
+        <a href="{% url 'category-delete' category.id %}" class="btn btn-outline-danger btn-sm" title="Excluir">
+          <i class="bi bi-trash"></i>
+        </a>
+    </div>
     </td>
   </tr>
 

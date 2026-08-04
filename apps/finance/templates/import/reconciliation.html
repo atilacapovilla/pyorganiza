@@ -1,0 +1,190 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}PyOrganiza - Conciliação{% endblock title %}
+
+{% block content %}
+
+<div class="container-fluid py-4">
+
+    <div class="d-flex flex-column flex-md-row align-items-md-center justify-content-between gap-3 mb-4">
+        <div class="d-flex align-items-center gap-3">
+            <div class="bg-success bg-opacity-10 rounded-circle d-flex align-items-center justify-content-center" style="width: 48px; height: 48px;">
+                <i class="bi bi-arrow-left-right text-primary fs-5"></i>
+            </div>
+            <div>
+                <h1 class="h4 fw-bold mb-0">Conciliação Bancária</h1>
+                <p class="text-muted small mb-0">{{ pending.count }} transações aguardando conciliação</p>
+            </div>
+        </div>
+        <div class="d-flex gap-2">
+            <a href="{% url 'import-upload' %}" class="btn btn-success shadow d-inline-flex align-items-center gap-2 px-4 py-2 rounded-3">
+                <i class="bi bi-upload"></i>Importar OFX
+            </a>
+        </div>
+    </div>
+
+    {% if pending %}
+    <div class="card shadow mb-4">
+        <div class="card-header py-3">
+            <h6 class="mb-0 fw-semibold">
+                <i class="bi bi-clock-history me-2"></i>Pendentes
+            </h6>
+        </div>
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table table-custom-14 table-hover align-middle mb-0">
+                    <thead class="table-light">
+                        <tr>
+                            <th class="text-muted small fw-semibold">Data</th>
+                            <th class="text-muted small fw-semibold">Descrição</th>
+                            <th class="text-muted small fw-semibold text-end">Valor</th>
+                            <th class="text-muted small fw-semibold">Tipo</th>
+                            <th class="text-muted small fw-semibold">Status</th>
+                            <th class="text-muted small fw-semibold">Ações</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for txn in pending %}
+                        <tr>
+                            <td>{{ txn.transaction_date|date:"d/m/Y" }}</td>
+                            <td>{{ txn.description }}</td>
+                            <td class="text-end fw-semibold">R$ {{ txn.transaction_value|floatformat:2 }}</td>
+                            <td>
+                                {% if txn.type == "C" %}
+                                <span class="badge bg-success bg-opacity-10 text-success">Crédito</span>
+                                {% else %}
+                                <span class="badge bg-danger bg-opacity-10 text-danger">Débito</span>
+                                {% endif %}
+                            </td>
+                            <td><span class="badge bg-warning bg-opacity-10 text-warning">Pendente</span></td>
+                            <td>
+                                <button type="button" class="btn btn-sm btn-success" title="Importar" data-bs-toggle="modal" data-bs-target="#categoryModal-{{ txn.pk }}">
+                                    <i class="bi bi-plus-circle"></i>
+                                </button>
+                                <form method="POST" action="{% url 'import-ignore' txn.pk %}" class="d-inline">
+                                    {% csrf_token %}
+                                    <button type="submit" class="btn btn-sm btn-outline-secondary" title="Ignorar">
+                                        <i class="bi bi-x-circle"></i>
+                                    </button>
+                                </form>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    {% for txn in pending %}
+    <div class="modal fade" id="categoryModal-{{ txn.pk }}" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <form method="POST" action="{% url 'import-accept' txn.pk %}">
+                    {% csrf_token %}
+                    <div class="modal-header">
+                        <h5 class="modal-title">Importar Transação</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                    </div>
+                    <div class="modal-body">
+                        <table class="table table-sm table-borderless mb-3">
+                            <tr>
+                                <td class="text-muted small">Descrição</td>
+                                <td class="fw-semibold">{{ txn.description }}</td>
+                            </tr>
+                            <tr>
+                                <td class="text-muted small">Valor</td>
+                                <td class="fw-semibold">R$ {{ txn.transaction_value|floatformat:2 }}</td>
+                            </tr>
+                            <tr>
+                                <td class="text-muted small">Data</td>
+                                <td class="fw-semibold">{{ txn.transaction_date|date:"d/m/Y" }}</td>
+                            </tr>
+                        </table>
+                        <div class="mb-0">
+                            <label for="category-{{ txn.pk }}" class="form-label">Categoria <span class="text-danger">*</span></label>
+                            <select name="category_id" id="category-{{ txn.pk }}" class="form-select" required>
+                                <option value="">Selecione...</option>
+                                {% for cat in categories %}
+                                <option value="{{ cat.id }}">{{ cat }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancelar</button>
+                        <button type="submit" class="btn btn-success">
+                            <i class="bi bi-check-lg me-1"></i>Confirmar Importação
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+    {% endfor %}
+    {% endif %}
+
+    <div class="card shadow">
+        <div class="card-header py-3 d-flex justify-content-between align-items-center">
+            <h6 class="mb-0 fw-semibold">
+                <i class="bi bi-list me-2"></i>Todas as Transações Importadas
+            </h6>
+            <div class="btn-group btn-group-sm">
+                <a href="?status=pending" class="btn btn-outline-secondary {% if current_status == 'pending' %}active{% endif %}">Pendentes</a>
+                <a href="?status=matched" class="btn btn-outline-secondary {% if current_status == 'matched' %}active{% endif %}">Conciliadas</a>
+                <a href="?status=imported" class="btn btn-outline-secondary {% if current_status == 'imported' %}active{% endif %}">Importadas</a>
+                <a href="?status=ignored" class="btn btn-outline-secondary {% if current_status == 'ignored' %}active{% endif %}">Ignoradas</a>
+                <a href="?status=all" class="btn btn-outline-secondary {% if current_status == 'all' %}active{% endif %}">Todas</a>
+            </div>
+        </div>
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table table-custom-14 table-hover align-middle mb-0">
+                    <thead class="table-light">
+                        <tr>
+                            <th class="text-muted small fw-semibold">Data</th>
+                            <th class="text-muted small fw-semibold">Descrição</th>
+                            <th class="text-muted small fw-semibold text-end">Valor</th>
+                            <th class="text-muted small fw-semibold">Tipo</th>
+                            <th class="text-muted small fw-semibold">Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for txn in transactions %}
+                        <tr>
+                            <td>{{ txn.transaction_date|date:"d/m/Y" }}</td>
+                            <td>{{ txn.description }}</td>
+                            <td class="text-end fw-semibold">R$ {{ txn.transaction_value|floatformat:2 }}</td>
+                            <td>
+                                {% if txn.type == "C" %}
+                                <span class="badge bg-success bg-opacity-10 text-success">Crédito</span>
+                                {% else %}
+                                <span class="badge bg-danger bg-opacity-10 text-danger">Débito</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% if txn.status == "pending" %}
+                                <span class="badge bg-warning bg-opacity-10 text-warning">Pendente</span>
+                                {% elif txn.status == "matched" %}
+                                <span class="badge bg-info bg-opacity-10 text-info">Conciliada</span>
+                                {% elif txn.status == "imported" %}
+                                <span class="badge bg-success bg-opacity-10 text-success">Importada</span>
+                                {% elif txn.status == "ignored" %}
+                                <span class="badge bg-secondary bg-opacity-10 text-secondary">Ignorada</span>
+                                {% endif %}
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="5" class="text-center py-4 text-muted">Nenhuma transação importada</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+</div>
+{% endblock content %}

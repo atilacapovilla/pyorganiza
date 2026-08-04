@@ -14,6 +14,7 @@
         <span class="badge bg-opacity-10
             {% if cat.category_type == 'receita' %}bg-success text-success
             {% elif cat.category_type == 'despesa' %}bg-danger text-danger
+            {% elif cat.category_type == 'transitoria' %}bg-warning text-warning
             {% else %}bg-info text-info{% endif %}">
             {{ cat.get_category_type_display }}
         </span>

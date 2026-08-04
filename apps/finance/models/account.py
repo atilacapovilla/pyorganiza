@@ -20,14 +20,13 @@ class Account(models.Model):
     opening_balance = models.DecimalField(
         max_digits=10, decimal_places=2, default="0.00", verbose_name="Saldo Inicial"
     )
-    current_balance = models.DecimalField(
-        max_digits=10, decimal_places=2, default="0.00", verbose_name="Saldo Atual"
-    )
     user = models.ForeignKey(
         settings.AUTH_USER_MODEL, on_delete=models.CASCADE, verbose_name="Usuário"
     )
-    created_at = models.DateTimeField(auto_now_add=True, verbose_name="Criado em")
-    updated_at = models.DateTimeField(auto_now=True, verbose_name="Alterado em")
+    created_at = models.DateTimeField(
+        auto_now_add=True, verbose_name="Criado em")
+    updated_at = models.DateTimeField(
+        auto_now=True, verbose_name="Alterado em")
     active = models.BooleanField("Conta Ativa", default=True)
 
     class Meta:
@@ -37,6 +36,14 @@ class Account(models.Model):
 
     def __str__(self):
         return self.name
+
+    @property
+    def current_balance(self):
+        from apps.finance.models.transaction import Transaction
+        qs = Transaction.objects.filter(account=self)
+        incomes = qs.filter(type="C").aggregate(total=models.Sum("transaction_value"))["total"] or 0
+        expenses = qs.filter(type="D").aggregate(total=models.Sum("transaction_value"))["total"] or 0
+        return self.opening_balance + incomes - expenses
 
     def save(self, *args, **kwargs):
         super().save(*args, **kwargs)
@@ -49,8 +56,3 @@ class Account(models.Model):
                     img.save(self.logo.path)
             except (FileNotFoundError, ValueError):
                 pass
-
-    class Meta:
-        ordering = ["name"]
-        verbose_name = "Conta"
-        verbose_name_plural = "Contas"

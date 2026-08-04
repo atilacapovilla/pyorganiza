@@ -44,10 +44,19 @@ class TransferForm(forms.Form):
             (account.id, account) for account in Account.objects.filter(user=user)
         ]
 
-        CATEGORY_OPTIONS = [
-            (category.id, category)
-            for category in Category.objects.filter(user=user)
-        ]
+        categories = Category.objects.filter(
+            user=user, parent__isnull=False
+        ).select_related("parent").order_by("category_type", "parent__name", "name")
+
+        CATEGORY_OPTIONS = []
+        for cat in categories:
+            parts = []
+            p = cat
+            while p:
+                parts.append(p.name)
+                p = p.parent
+            label = " \u2192 ".join(reversed(parts))
+            CATEGORY_OPTIONS.append((cat.id, label))
 
         self.fields["account_origin"].choices = ACCOUNT_OPTIONS
         self.fields["account_destination"].choices = ACCOUNT_OPTIONS

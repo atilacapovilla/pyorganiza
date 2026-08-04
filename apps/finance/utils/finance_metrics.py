@@ -12,7 +12,7 @@ def get_finance_balance(request, month, year):
         user=request.user,
         transaction_date__year=year,
         transaction_date__month=month,
-    )
+    ).exclude(category__category_type="transitoria")
 
     expenses = (
         transactions.filter(type="D").aggregate(Sum("transaction_value"))[
@@ -62,6 +62,7 @@ def get_finance_accounts_balance(request):
             or 0
         )
         balance = account.opening_balance + incomes - expenses
+        account.__dict__["current_balance"] = balance
         balance_total += balance
 
     accounts_other = (
@@ -86,6 +87,7 @@ def get_finance_accounts_balance(request):
             or 0
         )
         balance = account.opening_balance + incomes - expenses
+        account.__dict__["current_balance"] = balance
 
     finance_accounts_balance = dict(
         accounts=accounts,
@@ -143,7 +145,7 @@ def get_finance_method(request, month=None, year=None):
         user=request.user,
         transaction_date__year=year,
         transaction_date__month=month,
-    )
+    ).exclude(category__category_type="transitoria")
 
     total_incomes = float(
         transactions.filter(type="C")

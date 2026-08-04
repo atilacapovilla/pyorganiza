@@ -56,12 +56,14 @@
                                         R$ {{ account.current_balance }}
                                     </td>
                                     <td class="text-end">
-                                        <a href="{% url 'account-update' account.id %}" class="btn btn-sm btn-outline-primary" title="Editar">
-                                            <i class="bi bi-pencil-square"></i>
-                                        </a>
-                                        <a href="{% url 'account-delete' account.id %}" class="btn btn-sm btn-outline-danger" title="Excluir">
-                                            <i class="bi bi-trash"></i>
-                                        </a>
+                                        <div class="btn-group" role="group">
+                                            <a href="{% url 'account-update' account.id %}" class="btn btn-sm btn-outline-primary me-2" title="Editar">
+                                                <i class="bi bi-pencil-square"></i>
+                                            </a>
+                                            <a href="{% url 'account-delete' account.id %}" class="btn btn-sm btn-outline-danger" title="Excluir">
+                                                <i class="bi bi-trash"></i>
+                                            </a>
+                                        </div>
                                     </td>
                                 </tr>
                                 {% endfor %}

@@ -23,3 +23,4 @@ tinyhtml5==2.0.0
 weasyprint==66.0
 webencodings==0.5.1
 zopfli==0.2.3.post1
+ofxparse==0.21

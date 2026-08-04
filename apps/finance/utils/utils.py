@@ -1,9 +1,14 @@
+from datetime import date
+
 from django.db.models import Sum
 
 from apps.finance.models.transaction import Transaction
 
 
 def cards_payment(user, account_debit, category, account_id, due_date):
+    today = date.today()
+    due_date = due_date or today
+    
     cards = Transaction.objects.filter(
         user=user, account__id=account_id, due_date=due_date, type="D"
     )
@@ -16,6 +21,7 @@ def cards_payment(user, account_debit, category, account_id, due_date):
         card.save()
 
     transaction = Transaction(
+        transaction_date=today,
         due_date=due_date,
         is_paid=True,
         account_id=account_debit,
@@ -28,6 +34,7 @@ def cards_payment(user, account_debit, category, account_id, due_date):
     transaction.save()
 
     transaction = Transaction(
+        transaction_date=today,
         due_date=due_date,
         is_paid=True,
         account_id=account_id,

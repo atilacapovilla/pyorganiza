@@ -1,14 +1,12 @@
 import sweetify
 
 from django.contrib import messages
-from django.contrib.auth import login
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.auth.views import LoginView
 from django.shortcuts import render, redirect
 from django.urls import reverse_lazy
 from django.views import View
-from django.views.generic.edit import FormView
-from .forms import RegisterForm, UserUpdateForm, ProfileUpdateForm
+from .forms import UserUpdateForm, ProfileUpdateForm
 
 
 class MyloginView(LoginView):
@@ -20,21 +18,6 @@ class MyloginView(LoginView):
     def form_invalid(self, form):
         messages.error(self.request, "Usuário ou Senha inválidos.")
         return self.render_to_response(self.get_context_data(form=form))
-
-
-class RegisterView(FormView):
-    template_name = "users/register.html"
-    form_class = RegisterForm
-    redirect_authenticated_user = True
-    success_url = reverse_lazy("login")
-
-    def form_valid(self, form):
-        user = form.save()
-
-        if user:
-            login(self.request, user)
-
-        return super(RegisterView, self).form_valid(form)
 
 
 class MyProfile(LoginRequiredMixin, View):
