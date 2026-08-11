@@ -30,8 +30,10 @@ class NoteList(LoginRequiredMixin, ListView):
             user=self.request.user).order_by("course", "order")
 
         course_id = self.request.GET.get("course")
-        if course_id:
-            notes = notes.filter(course_id=course_id)
+        if not course_id:
+            return Note.objects.none()
+
+        notes = notes.filter(course_id=course_id)
 
         query = self.request.GET.get("search")
         if query:
@@ -40,7 +42,13 @@ class NoteList(LoginRequiredMixin, ListView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context["courses"] = Course.objects.all()
+        context["courses"] = Course.objects.filter(user=self.request.user)
+        context["selected_course"] = None
+        course_id = self.request.GET.get("course")
+        if course_id:
+            context["selected_course"] = Course.objects.filter(
+                user=self.request.user, pk=course_id
+            ).first()
         return context
 
 
@@ -49,6 +57,17 @@ class NoteCreate(LoginRequiredMixin, CreateView):
     template_name = "note/note_form.html"
     form_class = NoteForm
     paginate_by = 10
+
+    def get_initial(self):
+        initial = {}
+        course_id = self.request.GET.get("course")
+        if course_id:
+            try:
+                initial["course"] = Course.objects.get(
+                    pk=course_id, user=self.request.user)
+            except Course.DoesNotExist:
+                pass
+        return initial
 
     def form_valid(self, form):
         form.instance.user = self.request.user

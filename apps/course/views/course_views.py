@@ -20,8 +20,10 @@ class CourseList(LoginRequiredMixin, ListView):
         courses = Course.objects.filter(user=self.request.user)
 
         subject_id = self.request.GET.get("subject")
-        if subject_id:
-            courses = courses.filter(subject_id=subject_id)
+        if not subject_id:
+            return Course.objects.none()
+
+        courses = courses.filter(subject_id=subject_id)
 
         query = self.request.GET.get("search")
         if query:
@@ -31,7 +33,13 @@ class CourseList(LoginRequiredMixin, ListView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context["subjects"] = Subject.objects.all()
+        context["subjects"] = Subject.objects.filter(user=self.request.user)
+        context["selected_subject"] = None
+        subject_id = self.request.GET.get("subject")
+        if subject_id:
+            context["selected_subject"] = Subject.objects.filter(
+                user=self.request.user, pk=subject_id
+            ).first()
         return context
 
 
@@ -42,7 +50,15 @@ class CourseCreate(LoginRequiredMixin, CreateView):
     success_url = reverse_lazy("courses")
 
     def get_initial(self):
-        return {"usuario": self.request.user}
+        initial = {"usuario": self.request.user}
+        subject_id = self.request.GET.get("subject")
+        if subject_id:
+            try:
+                initial["subject"] = Subject.objects.get(
+                    pk=subject_id, user=self.request.user)
+            except Subject.DoesNotExist:
+                pass
+        return initial
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)

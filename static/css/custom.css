@@ -1072,7 +1072,6 @@ body {
 /* ============================================
    LIST GROUP - DARK MODE
    ============================================ */
-/* 
 [data-theme="dark"] .list-group-item {
     background-color: var(--bg-primary) !important;
     border-color: var(--border-color) !important;
@@ -1093,8 +1092,8 @@ body {
 }
 
 [data-theme="dark"] .list-group-item.active {
-    background-color: var(--accent-color);
-    border-color: var(--accent-color);
+    background-color: #667eea;
+    border-color: #667eea;
     color: #fff;
 }
 
