@@ -3,11 +3,25 @@
         <div class="card bg-success text-white mb-4">
             <div class="card-body h5">Receitas</div>
             <div class="card-footer d-flex align-items-center justify-content-between">
-                <div class="h5">
-                    R$ {{ finance_balance.incomes | floatformat:2}}
+                <div>
+                    <div class="h5">
+                        R$ {{ finance_balance.incomes | floatformat:2}}
+                    </div>
+                    {% if finance_balance.prev_incomes %}
+                    <small class="text-white-50">
+                        {% if finance_balance.incomes_change >= 0 %}
+                        <i class="bi bi-arrow-up"></i>
+                        {% else %}
+                        <i class="bi bi-arrow-down"></i>
+                        {% endif %}
+                        {{ finance_balance.incomes_change_abs | floatformat:2 }}% vs. mês anterior
+                    </small>
+                    {% endif %}
                 </div>
-                <a class="small text-white stretched-link" href="#">Detalhes</a>
-                <div class="small text-white"><i class="bi bi-chevron-right"></i></div>
+                <div>
+                    <a class="small text-white stretched-link" href="#" data-bs-toggle="modal" data-bs-target="#lastMonthsModal" data-metric="incomes">Detalhes</a>
+                    <div class="small text-white"><i class="bi bi-chevron-right"></i></div>
+                </div>
             </div>
         </div>
     </div>
@@ -15,11 +29,25 @@
         <div class="card bg-danger text-white mb-4">
             <div class="card-body h5">Despesas</div>
             <div class="card-footer d-flex align-items-center justify-content-between">
-                <div class="h5">
-                    R$ {{ finance_balance.expenses | floatformat:2}}
+                <div>
+                    <div class="h5">
+                        R$ {{ finance_balance.expenses | floatformat:2}}
+                    </div>
+                    {% if finance_balance.prev_expenses %}
+                    <small class="text-white-50">
+                        {% if finance_balance.expenses_change > 0 %}
+                        <i class="bi bi-arrow-up"></i>
+                        {% else %}
+                        <i class="bi bi-arrow-down"></i>
+                        {% endif %}
+                        {{ finance_balance.expenses_change_abs | floatformat:2 }}% vs. mês anterior
+                    </small>
+                    {% endif %}
                 </div>
-                <a class="small text-white stretched-link" href="#">Detalhes</a>
-                <div class="small text-white"><i class="bi bi-chevron-right"></i></div>
+                <div>
+                    <a class="small text-white stretched-link" href="#" data-bs-toggle="modal" data-bs-target="#lastMonthsModal" data-metric="expenses">Detalhes</a>
+                    <div class="small text-white"><i class="bi bi-chevron-right"></i></div>
+                </div>
             </div>
         </div>
     </div>
@@ -28,34 +56,115 @@
         <div class="card bg-primary text-white mb-4">
             <div class="card-body h5">Saldo Balanço</div>
             <div class="card-footer d-flex align-items-center justify-content-between">
-                <div class="h5">
-                    R$ {{ finance_balance.balance | floatformat:2 }}
+                <div>
+                    <div class="h5">
+                        R$ {{ finance_balance.balance | floatformat:2 }}
+                    </div>
+                    {% if finance_balance.prev_balance %}
+                    <small class="text-white-50">
+                        {% if finance_balance.balance_change >= 0 %}
+                        <i class="bi bi-arrow-up"></i>
+                        {% else %}
+                        <i class="bi bi-arrow-down"></i>
+                        {% endif %}
+                        {{ finance_balance.balance_change_abs | floatformat:2 }}% vs. mês anterior
+                    </small>
+                    {% endif %}
                 </div>
-                <a class="small text-white stretched-link" href="#">Detalhes</a>
-                <div class="small text-white"><i class="bi bi-chevron-right"></i></div>
+                <div>
+                    <a class="small text-white stretched-link" href="#" data-bs-toggle="modal" data-bs-target="#lastMonthsModal" data-metric="balance">Detalhes</a>
+                    <div class="small text-white"><i class="bi bi-chevron-right"></i></div>
+                </div>
             </div>
         </div>
         {% elif finance_balance.balance < 0 %} <div class="card bg-danger text-white mb-4">
             <div class="card-body h5">Saldo Balanço</div>
             <div class="card-footer d-flex align-items-center justify-content-between">
-                <div class="h5">
-                    R$ {{ finance_balance.balance | floatformat:2 }}
+                <div>
+                    <div class="h5">
+                        R$ {{ finance_balance.balance | floatformat:2 }}
+                    </div>
+                    {% if finance_balance.prev_balance %}
+                    <small class="text-white-50">
+                        {% if finance_balance.balance_change >= 0 %}
+                        <i class="bi bi-arrow-up"></i>
+                        {% else %}
+                        <i class="bi bi-arrow-down"></i>
+                        {% endif %}
+                        {{ finance_balance.balance_change_abs | floatformat:2 }}% vs. mês anterior
+                    </small>
+                    {% endif %}
                 </div>
-                <a class="small text-white stretched-link" href="#">Detalhes</a>
-                <div class="small text-white"><i class="bi bi-chevron-right"></i></div>
+                <div>
+                    <a class="small text-white stretched-link" href="#" data-bs-toggle="modal" data-bs-target="#lastMonthsModal" data-metric="balance">Detalhes</a>
+                    <div class="small text-white"><i class="bi bi-chevron-right"></i></div>
+                </div>
             </div>
     </div>
     {% else %}
     <div class="card bg-secondary text-white mb-4">
         <div class="card-body h5">Saldo Balanço</div>
         <div class="card-footer d-flex align-items-center justify-content-between">
-            <div class="h5">
-                R$ {{ finance_balance.balance | floatformat:2 }}
+            <div>
+                <div class="h5">
+                    R$ {{ finance_balance.balance | floatformat:2 }}
+                </div>
+                {% if finance_balance.prev_balance %}
+                <small class="text-white-50">
+                    {% if finance_balance.balance_change >= 0 %}
+                    <i class="bi bi-arrow-up"></i>
+                    {% else %}
+                    <i class="bi bi-arrow-down"></i>
+                    {% endif %}
+                    {{ finance_balance.balance_change_abs | floatformat:2 }}% vs. mês anterior
+                </small>
+                {% endif %}
             </div>
-            <a class="small text-white stretched-link" href="#">Detalhes</a>
-            <div class="small text-white"><i class="bi bi-chevron-right"></i></div>
+                <div>
+                    <a class="small text-white stretched-link" href="#" data-bs-toggle="modal" data-bs-target="#lastMonthsModal" data-metric="balance">Detalhes</a>
+                    <div class="small text-white"><i class="bi bi-chevron-right"></i></div>
+                </div>
         </div>
     </div>
     {% endif %}
 </div>
+</div>
+
+{{ finance_last_months|json_script:"last-months-data" }}
+
+<!-- Modal: últimos 6 meses -->
+<div class="modal fade" id="lastMonthsModal" tabindex="-1" aria-labelledby="lastMonthsModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="lastMonthsModalLabel">
+                    <i class="bi bi-graph-up me-1"></i>
+                    Últimos 6 meses
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
+            </div>
+            <div class="modal-body">
+                <div class="table-responsive">
+                    <table class="table table-sm table-hover align-middle mb-0">
+                        <thead>
+                            <tr>
+                                <th scope="col">Mês</th>
+                                <th scope="col" class="text-end">Receitas</th>
+                                <th scope="col" class="text-end">% Receitas</th>
+                                <th scope="col" class="text-end">Despesas</th>
+                                <th scope="col" class="text-end">% Despesas</th>
+                                <th scope="col" class="text-end">Saldo</th>
+                                <th scope="col" class="text-end">% Saldo</th>
+                            </tr>
+                        </thead>
+                        <tbody id="last-months-table-body">
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Fechar</button>
+            </div>
+        </div>
+    </div>
 </div>

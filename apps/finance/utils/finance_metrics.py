@@ -5,9 +5,7 @@ from apps.finance.models.account import Account
 from apps.finance.models.transaction import Transaction
 
 
-def get_finance_balance(request, month, year):
-    today = date.today()
-
+def _get_month_totals(request, month, year):
     transactions = Transaction.objects.filter(
         user=request.user,
         transaction_date__year=year,
@@ -28,13 +26,82 @@ def get_finance_balance(request, month, year):
         or 0
     )
 
+    return expenses, incomes
+
+
+def _previous_month(month, year):
+    if month == 1:
+        return 12, year - 1
+    return month - 1, year
+
+
+def get_finance_balance(request, month, year):
+    expenses, incomes = _get_month_totals(request, month, year)
     balance = incomes - expenses
+
+    prev_month, prev_year = _previous_month(month, year)
+    prev_expenses, prev_incomes = _get_month_totals(request, prev_month, prev_year)
+    prev_balance = prev_incomes - prev_expenses
+
+    def _pct_change(current, previous):
+        if not previous:
+            return 0.0
+        return ((current - previous) / previous) * 100
+
+    incomes_change = _pct_change(incomes, prev_incomes)
+    expenses_change = _pct_change(expenses, prev_expenses)
+    balance_change = _pct_change(balance, prev_balance)
 
     return dict(
         expenses=expenses,
         incomes=incomes,
         balance=balance,
+        prev_expenses=prev_expenses,
+        prev_incomes=prev_incomes,
+        prev_balance=prev_balance,
+        incomes_change=incomes_change,
+        expenses_change=expenses_change,
+        balance_change=balance_change,
+        incomes_change_abs=abs(incomes_change),
+        expenses_change_abs=abs(expenses_change),
+        balance_change_abs=abs(balance_change),
     )
+
+
+def get_finance_last_months(request, month, year):
+    months_data = []
+    m, y = month, year
+    for _ in range(6):
+        expenses, incomes = _get_month_totals(request, m, y)
+        balance = incomes - expenses
+        months_data.append(dict(
+            month=m,
+            year=y,
+            incomes=float(incomes),
+            expenses=float(expenses),
+            balance=float(balance),
+        ))
+        m, y = _previous_month(m, y)
+
+    months_data = list(reversed(months_data))
+
+    def _pct_change(current, previous):
+        if not previous:
+            return 0.0
+        return ((current - previous) / previous) * 100
+
+    for index, item in enumerate(months_data):
+        if index == 0:
+            item["incomes_change"] = 0.0
+            item["expenses_change"] = 0.0
+            item["balance_change"] = 0.0
+        else:
+            prev = months_data[index - 1]
+            item["incomes_change"] = _pct_change(item["incomes"], prev["incomes"])
+            item["expenses_change"] = _pct_change(item["expenses"], prev["expenses"])
+            item["balance_change"] = _pct_change(item["balance"], prev["balance"])
+
+    return months_data
 
 
 def get_finance_accounts_balance(request):

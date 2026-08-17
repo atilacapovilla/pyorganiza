@@ -48,6 +48,122 @@
             
             {% include "dashboard/components/_finance_grafics_year.html" %}
             {% include "dashboard/components/_finance_balance_pendents.html" %}
+
+            <!-- Novo painel: Análises avançadas -->
+            <div class="card mb-4 shadow-sm">
+                <div class="card-header">
+                    <i class="bi bi-activity me-1"></i>
+                    Análises avançadas
+                </div>
+                <div class="card-body">
+
+                    <!-- Despesas por categoria + Essenciais x Supérfluas -->
+                    <div class="row g-4 mb-4">
+
+                        <div class="col-12 col-xl-7">
+                            <div class="border rounded-3 p-3 h-100">
+                                <h5 class="fw-bold mb-1">Despesas por categoria</h5>
+                                <p class="text-secondary small">Distribuição das despesas no mês</p>
+                                <div class="row align-items-center">
+                                    <div class="col-md-6">
+                                        <div style="position: relative; height: 260px;">
+                                            <canvas id="expenses-by-category"></canvas>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6" id="category-list"></div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="col-12 col-xl-5">
+                            <div class="border rounded-3 p-3 h-100">
+                                <h5 class="fw-bold">Essenciais × Supérfluas</h5>
+                                <p class="text-secondary small">Necessidade dos seus gastos</p>
+                                <div style="position: relative; height: 260px;">
+                                    <canvas id="essentials-superfluous"></canvas>
+                                </div>
+                                <div class="row text-center mt-3">
+                                    <div class="col">
+                                        <div class="text-secondary small">Essenciais</div>
+                                        <strong id="ess-value">-</strong>
+                                        <div class="text-secondary small" id="ess-pct">-</div>
+                                    </div>
+                                    <div class="col">
+                                        <div class="text-secondary small">Supérfluas</div>
+                                        <strong id="noness-value">-</strong>
+                                        <div class="text-secondary small" id="noness-pct">-</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                    </div>
+
+                    <!-- Reserva de emergência + Patrimônio líquido -->
+                    <div class="row g-4">
+
+                        <div class="col-12 col-lg-6">
+                            <div class="border rounded-3 p-3 h-100">
+                                <div class="d-flex justify-content-between">
+                                    <div>
+                                        <h5 class="fw-bold">Reserva de emergência</h5>
+                                        <p class="text-secondary small">Cobertura das despesas essenciais</p>
+                                    </div>
+                                    <div class="rounded-3 bg-success-subtle text-success d-flex align-items-center justify-content-center" style="width: 48px; height: 48px;">
+                                        <i class="bi bi-shield-check"></i>
+                                    </div>
+                                </div>
+                                <div class="display-6 fw-bold">
+                                    <span id="reserve-months">-</span>
+                                    <small class="fs-6 text-secondary">meses</small>
+                                </div>
+                                <div class="progress mt-3 mb-2" style="height: 8px;">
+                                    <div class="progress-bar bg-success" id="reserve-bar" style="width: 0%;"></div>
+                                </div>
+                                <div class="d-flex justify-content-between small">
+                                    <span class="text-secondary">Reserva atual: <strong>{{ finance_accounts_balance.balance_total | floatformat:2 }}</strong></span>
+                                    <span>Meta: 6 meses</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="col-12 col-lg-6">
+                            <div class="border rounded-3 p-3 h-100">
+                                <div class="d-flex justify-content-between">
+                                    <div>
+                                        <h5 class="fw-bold">Patrimônio líquido</h5>
+                                        <p class="text-secondary small">Disponível + a receber - a pagar</p>
+                                    </div>
+                                    <div class="rounded-3 bg-primary-subtle text-primary d-flex align-items-center justify-content-center" style="width: 48px; height: 48px;">
+                                        <i class="bi bi-bank"></i>
+                                    </div>
+                                </div>
+                                <div class="display-6 fw-bold" id="patrimonio-value">-</div>
+                                <hr>
+                                <div class="d-flex justify-content-between">
+                                    <span class="text-secondary">Disponível</span>
+                                    <strong class="text-success" id="disponivel-value">-</strong>
+                                </div>
+                                <div class="d-flex justify-content-between mt-2">
+                                    <span class="text-secondary">A receber</span>
+                                    <strong class="text-primary" id="areceber-value">-</strong>
+                                </div>
+                                <div class="d-flex justify-content-between mt-2">
+                                    <span class="text-secondary">A pagar</span>
+                                    <strong class="text-danger" id="apagar-value">-</strong>
+                                </div>
+                            </div>
+                        </div>
+
+                    </div>
+
+                </div>
+            </div>
+
+            {{ finance_accounts_balance.balance_total|json_script:"balance-total-data" }}
+            {{ finance_method.expenses_essentials|json_script:"essential-expense-data" }}
+            {{ finance_pendents.incomes_due|json_script:"incomes-due-data" }}
+            {{ finance_pendents.expenses_due|json_script:"expenses-due-data" }}
         </div>
     </div>
 </div>
@@ -114,39 +230,275 @@
         });
     }
 
+    function formatCurrency(value) {
+        return value.toLocaleString('pt-BR', {
+            style: 'currency',
+            currency: 'BRL'
+        });
+    }
+
+    // ---------------------------------------------------------
+    // Despesas por categoria (essenciais + não essenciais)
+    // ---------------------------------------------------------
+
+    var categoryCtx = document.getElementById("expenses-by-category");
+    if (categoryCtx) {
+        var labels_all = JSON.parse('{{ labels_essential|safe }}')
+            .concat(JSON.parse('{{ labels_non_essential|safe }}'));
+        var data_all = JSON.parse('{{ data_essential|safe }}')
+            .concat(JSON.parse('{{ data_non_essential|safe }}'));
+        var colors_all = JSON.parse('{{ colors_essential|safe }}')
+            .concat(JSON.parse('{{ colors_non_essential|safe }}'));
+
+        new Chart(categoryCtx, {
+            type: 'doughnut',
+            data: {
+                labels: labels_all,
+                datasets: [{
+                    data: data_all,
+                    backgroundColor: colors_all,
+                    borderWidth: 0
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                cutout: '70%',
+                plugins: {
+                    legend: { position: 'bottom' },
+                    tooltip: {
+                        callbacks: {
+                            label: function(context) {
+                                return context.label + ': ' + formatCurrency(context.raw);
+                            }
+                        }
+                    }
+                }
+            }
+        });
+
+        var categoryList = document.getElementById("category-list");
+        if (categoryList) {
+            var listHtml = labels_all.map(function(label, i) {
+                return '<div class="d-flex justify-content-between border-bottom py-2">' +
+                        '<span>' +
+                            '<span class="d-inline-block rounded-circle me-1" ' +
+                            'style="width:10px;height:10px;background-color:' + (colors_all[i] || '#ccc') + ';"></span>' +
+                            label +
+                        '</span>' +
+                        '<strong>' + formatCurrency(data_all[i]) + '</strong>' +
+                    '</div>';
+            }).join('');
+            if (listHtml) {
+                categoryList.innerHTML = listHtml;
+            } else {
+                categoryList.innerHTML = '<p class="text-secondary small mt-2">Sem despesas no mês.</p>';
+            }
+        }
+    }
+
+    // ---------------------------------------------------------
+    // Essenciais × Supérfluas
+    // ---------------------------------------------------------
+
+    var necessityCtx = document.getElementById("essentials-superfluous");
+    if (necessityCtx) {
+        var essTotal = JSON.parse('{{ data_essential|safe }}')
+            .reduce(function(a, b) { return a + b; }, 0);
+        var nonEssTotal = JSON.parse('{{ data_non_essential|safe }}')
+            .reduce(function(a, b) { return a + b; }, 0);
+        var totalExpenses = essTotal + nonEssTotal;
+
+        new Chart(necessityCtx, {
+            type: 'doughnut',
+            data: {
+                labels: ['Essenciais', 'Supérfluas'],
+                datasets: [{
+                    data: [essTotal, nonEssTotal],
+                    backgroundColor: ['rgb(0, 47, 255)', 'rgb(245, 9, 60)'],
+                    borderWidth: 0
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                cutout: '72%',
+                plugins: {
+                    legend: { position: 'bottom' },
+                    tooltip: {
+                        callbacks: {
+                            label: function(context) {
+                                var pct = totalExpenses > 0
+                                    ? (context.raw / totalExpenses * 100).toFixed(1).replace('.', ',')
+                                    : '0,0';
+                                return context.label + ': ' + formatCurrency(context.raw) + ' (' + pct + '%)';
+                            }
+                        }
+                    }
+                }
+            }
+        });
+
+        document.getElementById("ess-value").textContent = formatCurrency(essTotal);
+        document.getElementById("noness-value").textContent = formatCurrency(nonEssTotal);
+        document.getElementById("ess-pct").textContent = totalExpenses > 0
+            ? (essTotal / totalExpenses * 100).toFixed(1).replace('.', ',') + '%'
+            : '0,0%';
+        document.getElementById("noness-pct").textContent = totalExpenses > 0
+            ? (nonEssTotal / totalExpenses * 100).toFixed(1).replace('.', ',') + '%'
+            : '0,0%';
+    }
+
+    // ---------------------------------------------------------
+    // Reserva de emergência e Patrimônio líquido
+    // ---------------------------------------------------------
+
+    var balanceTotal = parseFloat(JSON.parse(
+        document.getElementById("balance-total-data").textContent));
+    var essentialExpense = parseFloat(JSON.parse(
+        document.getElementById("essential-expense-data").textContent));
+    var incomesDue = parseFloat(JSON.parse(
+        document.getElementById("incomes-due-data").textContent));
+    var expensesDue = parseFloat(JSON.parse(
+        document.getElementById("expenses-due-data").textContent));
+
+    var monthsReserve = essentialExpense > 0 ? balanceTotal / essentialExpense : 0;
+    document.getElementById("reserve-months").textContent = monthsReserve.toFixed(1).replace('.', ',');
+    document.getElementById("reserve-bar").style.width = Math.min((monthsReserve / 6) * 100, 100) + '%';
+
+    document.getElementById("patrimonio-value").textContent = formatCurrency(balanceTotal + incomesDue - expensesDue);
+    document.getElementById("disponivel-value").textContent = formatCurrency(balanceTotal);
+    document.getElementById("areceber-value").textContent = formatCurrency(incomesDue);
+    document.getElementById("apagar-value").textContent = formatCurrency(expensesDue);
+
     var ctx3 = document.getElementById("expenses-incomes-year");
     if (ctx3) {
         var labels_year = JSON.parse('{{ labels_year|safe }}');
         var data_expenses_year = JSON.parse('{{ data_expenses_year|safe }}');
         var data_incomes_year = JSON.parse('{{ data_incomes_year|safe }}');
         new Chart(ctx3, {
-            type: 'scatter',
+            type: 'line',
             data: {
                 labels: labels_year,
                 datasets: [
                     {
-                        type: 'line',
                         label: 'Receitas',
                         data: data_incomes_year,
-                        borderColor: 'rgba(54, 162, 235, 1)',
-                        backgroundColor: 'rgba(54, 162, 235, 0.5)',
-                        borderWidth: 1
+                        borderColor: 'rgb(0, 47, 255)',
+                        
+                        borderWidth: 1,
+                        tension: 0.35,
                     },
                     {
-                        type: 'bar',
                         label: 'Despesas',
                         data: data_expenses_year,
-                        borderColor: 'rgba(255,99,132,1)',
-                        backgroundColor: 'rgba(255, 99, 132, 0.5)',
-                        borderWidth: 1
+                        borderColor: 'rgb(245, 9, 60)',
+        
+                        borderWidth: 1,
+                        tension: 0.35,
+
                     }
                 ]
             },
             options: {
                 responsive: true,
                 plugins: { legend: { labels: { font: { size: 12 } } } },
-                layout: { padding: 0 }
+                layout: { padding: 0 },
+                
+                scales: {
+                    y: {
+                        beginAtZero: false,
+                        ticks: {
+                            callback: function(value) {
+                                return value.toLocaleString(
+                                    'pt-BR',
+                                    {
+                                        style: 'currency',
+                                        currency: 'BRL',
+                                        maximumFractionDigits: 0
+                                    }
+                                );
+                            }
+                        }
+                    }
+                }
             }
+        });
+    }
+
+    // ---------------------------------------------------------
+    // Modal: últimos 6 meses
+    // ---------------------------------------------------------
+
+    var lastMonthsModal = document.getElementById('lastMonthsModal');
+    if (lastMonthsModal) {
+        var lastMonthsData = JSON.parse(
+            document.getElementById('last-months-data').textContent);
+        var monthNames = [
+            'Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho',
+            'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro'
+        ];
+        var metricLabels = {
+            incomes: 'Receitas',
+            expenses: 'Despesas',
+            balance: 'Saldo'
+        };
+
+        lastMonthsModal.addEventListener('show.bs.modal', function(event) {
+            var trigger = event.relatedTarget;
+            var metric = trigger ? trigger.getAttribute('data-metric') : 'balance';
+
+            document.getElementById('lastMonthsModalLabel').innerHTML =
+                '<i class="bi bi-graph-up me-1"></i>' +
+                'Últimos 6 meses - ' + (metricLabels[metric] || 'Geral');
+
+            var tbody = document.getElementById('last-months-table-body');
+            var rows = '';
+
+            lastMonthsData.forEach(function(item, index) {
+                var label = monthNames[item.month - 1] + '/' + item.year;
+
+                var balanceClass = item.balance > 0 ? 'text-success'
+                    : (item.balance < 0 ? 'text-danger' : 'text-muted');
+                var highlight = 'fw-bold';
+
+                function pctCell(value, positiveGood, metric) {
+                    var cls = 'text-end';
+                    if (index > 0) {
+                        if (value === 0) {
+                            cls += ' text-muted';
+                        } else if ((value > 0) === positiveGood) {
+                            cls += ' text-success';
+                        } else {
+                            cls += ' text-danger';
+                        }
+                    } else {
+                        cls += ' text-muted';
+                    }
+                    if (metric) cls += ' ' + highlight;
+                    var text = index === 0 ? '—'
+                        : Math.abs(value).toFixed(1).replace('.', ',') + '%';
+                    var arrow = index === 0 ? '' :
+                        (value > 0 ? '<i class="bi bi-arrow-up"></i> ' :
+                         (value < 0 ? '<i class="bi bi-arrow-down"></i> ' : ''));
+                    return '<td class="' + cls + '">' + arrow + text + '</td>';
+                }
+
+                rows += '<tr>' +
+                    '<td>' + label + '</td>' +
+                    '<td class="text-end' + (metric === 'incomes' ? ' ' + highlight : '') + '">' +
+                        formatCurrency(item.incomes) + '</td>' +
+                    pctCell(item.incomes_change, true, metric === 'incomes') +
+                    '<td class="text-end' + (metric === 'expenses' ? ' ' + highlight : '') + '">' +
+                        formatCurrency(item.expenses) + '</td>' +
+                    pctCell(item.expenses_change, false, metric === 'expenses') +
+                    '<td class="text-end ' + balanceClass + (metric === 'balance' ? ' ' + highlight : '') + '">' +
+                        formatCurrency(item.balance) + '</td>' +
+                    pctCell(item.balance_change, true, metric === 'balance') +
+                    '</tr>';
+            });
+
+            tbody.innerHTML = rows;
         });
     }
 </script>

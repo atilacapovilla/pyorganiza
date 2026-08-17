@@ -38,6 +38,8 @@ def dashboard(request):
 
     finance_method = finance_metrics.get_finance_method(request, month, year)
 
+    finance_last_months = finance_metrics.get_finance_last_months(request, month, year)
+
     months_list = [
         (1, "Janeiro"), (2, "Fevereiro"), (3, "Março"), (4, "Abril"),
         (5, "Maio"), (6, "Junho"), (7, "Julho"), (8, "Agosto"),
@@ -60,6 +62,7 @@ def dashboard(request):
         "finance_accounts_balance": finance_accounts_balance,
         "finance_pendents": finance_pendents,
         "finance_method": finance_method,
+        "finance_last_months": finance_last_months,
         "selected_month": month,
         "selected_year": year,
         "months": months_list,
