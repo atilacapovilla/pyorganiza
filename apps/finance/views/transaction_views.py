@@ -38,7 +38,6 @@ class TransactionList(LoginRequiredMixin, ListView):
         if account:
             transactions = transactions.filter(account__id=account)
 
-        print("Teste ========>", transactions)
         return transactions
 
     def get_context_data(self, **kwargs):

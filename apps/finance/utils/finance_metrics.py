@@ -46,7 +46,7 @@ def get_finance_balance(request, month, year):
     def _pct_change(current, previous):
         if not previous:
             return 0.0
-        return ((current - previous) / previous) * 100
+        return ((current - previous) / abs(previous)) * 100
 
     incomes_change = _pct_change(incomes, prev_incomes)
     expenses_change = _pct_change(expenses, prev_expenses)
@@ -88,7 +88,7 @@ def get_finance_last_months(request, month, year):
     def _pct_change(current, previous):
         if not previous:
             return 0.0
-        return ((current - previous) / previous) * 100
+        return ((current - previous) / abs(previous)) * 100
 
     for index, item in enumerate(months_data):
         if index == 0:

@@ -1,6 +1,6 @@
 <div class="row">
     <div class="col-xl-4 col-md-6">
-        <div class="card bg-success text-white mb-4">
+        <div class="card mb-4 shadow" style="border-left: 5px solid var(--bs-success) !important;">
             <div class="card-body h5">Receitas</div>
             <div class="card-footer d-flex align-items-center justify-content-between">
                 <div>
@@ -8,7 +8,7 @@
                         R$ {{ finance_balance.incomes | floatformat:2}}
                     </div>
                     {% if finance_balance.prev_incomes %}
-                    <small class="text-white-50">
+                    <small class="text-success">
                         {% if finance_balance.incomes_change >= 0 %}
                         <i class="bi bi-arrow-up"></i>
                         {% else %}
@@ -16,17 +16,23 @@
                         {% endif %}
                         {{ finance_balance.incomes_change_abs | floatformat:2 }}% vs. mês anterior
                     </small>
+                    {% else %}
+                    <small>
+                        <i class="bi bi-dash-circle"></i>
+                         Sem receitas no mês anterior.
+                    </small>
                     {% endif %}
                 </div>
                 <div>
-                    <a class="small text-white stretched-link" href="#" data-bs-toggle="modal" data-bs-target="#lastMonthsModal" data-metric="incomes">Detalhes</a>
-                    <div class="small text-white"><i class="bi bi-chevron-right"></i></div>
+                    <a class="small text-success stretched-link" href="#" data-bs-toggle="modal" data-bs-target="#lastMonthsModal" data-metric="incomes">
+                        Detalhes
+                    </a>
                 </div>
             </div>
         </div>
     </div>
     <div class="col-xl-4 col-md-6">
-        <div class="card bg-danger text-white mb-4">
+        <div class="card mb-4 shadow" style="border-left: 5px solid var(--bs-danger) !important;">
             <div class="card-body h5">Despesas</div>
             <div class="card-footer d-flex align-items-center justify-content-between">
                 <div>
@@ -34,7 +40,7 @@
                         R$ {{ finance_balance.expenses | floatformat:2}}
                     </div>
                     {% if finance_balance.prev_expenses %}
-                    <small class="text-white-50">
+                    <small class="text-danger">
                         {% if finance_balance.expenses_change > 0 %}
                         <i class="bi bi-arrow-up"></i>
                         {% else %}
@@ -42,18 +48,24 @@
                         {% endif %}
                         {{ finance_balance.expenses_change_abs | floatformat:2 }}% vs. mês anterior
                     </small>
-                    {% endif %}
+                    {% else %}
+                    <small>
+                        <i class="bi bi-dash-circle"></i>
+                         Sem despesas mês anterior.
+                    </small>
+                    {% endif %} 
                 </div>
                 <div>
-                    <a class="small text-white stretched-link" href="#" data-bs-toggle="modal" data-bs-target="#lastMonthsModal" data-metric="expenses">Detalhes</a>
-                    <div class="small text-white"><i class="bi bi-chevron-right"></i></div>
+                    <a class="small text-danger stretched-link" href="#" data-bs-toggle="modal" data-bs-target="#lastMonthsModal" data-metric="expenses">
+                        Detalhes
+                    </a>
                 </div>
             </div>
         </div>
     </div>
     <div class="col-xl-4 col-md-6">
         {% if finance_balance.balance > 0 %}
-        <div class="card bg-primary text-white mb-4">
+        <div class="card mb-4 shadow" style="border-left: 5px solid var(--bs-success) !important;">
             <div class="card-body h5">Saldo Balanço</div>
             <div class="card-footer d-flex align-items-center justify-content-between">
                 <div>
@@ -61,7 +73,7 @@
                         R$ {{ finance_balance.balance | floatformat:2 }}
                     </div>
                     {% if finance_balance.prev_balance %}
-                    <small class="text-white-50">
+                    <small class="text-success">
                         {% if finance_balance.balance_change >= 0 %}
                         <i class="bi bi-arrow-up"></i>
                         {% else %}
@@ -69,15 +81,22 @@
                         {% endif %}
                         {{ finance_balance.balance_change_abs | floatformat:2 }}% vs. mês anterior
                     </small>
+                    {% else %}
+                    <small>
+                        <i class="bi bi-dash-circle"></i>
+                         Sem saldo no mês anterior.
+                    </small>
                     {% endif %}
                 </div>
                 <div>
-                    <a class="small text-white stretched-link" href="#" data-bs-toggle="modal" data-bs-target="#lastMonthsModal" data-metric="balance">Detalhes</a>
-                    <div class="small text-white"><i class="bi bi-chevron-right"></i></div>
+                    <a class="small text-success stretched-link" href="#" data-bs-toggle="modal" data-bs-target="#lastMonthsModal" data-metric="balance">
+                        Detalhes
+                    </a>
                 </div>
             </div>
         </div>
-        {% elif finance_balance.balance < 0 %} <div class="card bg-danger text-white mb-4">
+        {% elif finance_balance.balance < 0 %} 
+            <div class="card mb-4 shadow" style="border-left: 5px solid var(--bs-danger) !important;">
             <div class="card-body h5">Saldo Balanço</div>
             <div class="card-footer d-flex align-items-center justify-content-between">
                 <div>
@@ -85,7 +104,7 @@
                         R$ {{ finance_balance.balance | floatformat:2 }}
                     </div>
                     {% if finance_balance.prev_balance %}
-                    <small class="text-white-50">
+                    <small class="text-danger">
                         {% if finance_balance.balance_change >= 0 %}
                         <i class="bi bi-arrow-up"></i>
                         {% else %}
@@ -93,36 +112,48 @@
                         {% endif %}
                         {{ finance_balance.balance_change_abs | floatformat:2 }}% vs. mês anterior
                     </small>
+                    {% else %}
+                    <small>
+                        <i class="bi bi-dash-circle"></i>
+                         Sem saldo no mês anterior.
+                    </small>
                     {% endif %}
                 </div>
                 <div>
-                    <a class="small text-white stretched-link" href="#" data-bs-toggle="modal" data-bs-target="#lastMonthsModal" data-metric="balance">Detalhes</a>
-                    <div class="small text-white"><i class="bi bi-chevron-right"></i></div>
+                    <a class="small text-danger stretched-link" href="#" data-bs-toggle="modal" data-bs-target="#lastMonthsModal" data-metric="balance">
+                        Detalhes
+                    </a>
                 </div>
             </div>
     </div>
     {% else %}
-    <div class="card bg-secondary text-white mb-4">
+    <div class="card mb-4" style="border-left: 5px solid var(--bs-secondary) !important;">
         <div class="card-body h5">Saldo Balanço</div>
         <div class="card-footer d-flex align-items-center justify-content-between">
             <div>
                 <div class="h5">
                     R$ {{ finance_balance.balance | floatformat:2 }}
                 </div>
-                {% if finance_balance.prev_balance %}
-                <small class="text-white-50">
-                    {% if finance_balance.balance_change >= 0 %}
-                    <i class="bi bi-arrow-up"></i>
+                    {% if finance_balance.prev_balance %}
+                    <small class="text-secondary">
+                        {% if finance_balance.balance_change >= 0 %}
+                        <i class="bi bi-arrow-up"></i>
+                        {% else %}
+                        <i class="bi bi-arrow-down"></i>
+                        {% endif %}
+                        {{ finance_balance.balance_change_abs | floatformat:2 }}% vs. mês anterior
+                    </small>
                     {% else %}
-                    <i class="bi bi-arrow-down"></i>
+                    <small>
+                        <i class="bi bi-dash-circle"></i>
+                         Sem saldo no mês anterior.
+                    </small>
                     {% endif %}
-                    {{ finance_balance.balance_change_abs | floatformat:2 }}% vs. mês anterior
-                </small>
-                {% endif %}
-            </div>
+                </div>
                 <div>
-                    <a class="small text-white stretched-link" href="#" data-bs-toggle="modal" data-bs-target="#lastMonthsModal" data-metric="balance">Detalhes</a>
-                    <div class="small text-white"><i class="bi bi-chevron-right"></i></div>
+                    <a class="small text-secondary stretched-link" href="#" data-bs-toggle="modal" data-bs-target="#lastMonthsModal" data-metric="balance">
+                        Detalhes
+                    </a>
                 </div>
         </div>
     </div>
