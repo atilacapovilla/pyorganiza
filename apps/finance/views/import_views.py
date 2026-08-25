@@ -1,16 +1,15 @@
 import tempfile
-from datetime import date
 
 import sweetify
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
-from django.db.models import Q
 from django.shortcuts import get_object_or_404, redirect, render
 
 from apps.finance.forms.import_forms import ImportUploadForm
 from apps.finance.models.category import Category
 from apps.finance.models.imported_transaction import ImportedTransaction
 from apps.finance.models.transaction import Transaction
+from apps.finance.utils.category_ordering import type_priority_annotation
 from apps.finance.utils.ofx_parser import parse_ofx
 
 
@@ -84,8 +83,11 @@ def import_reconciliation(request):
             user=request.user, status=status_filter
         ).order_by("transaction_date")
 
-    categories = Category.objects.filter(user=request.user, parent__isnull=False).order_by(
-        "category_type", "parent__name", "name"
+    categories = (
+        Category.objects.filter(user=request.user, parent__isnull=False)
+        .select_related("parent")
+        .annotate(type_order=type_priority_annotation())
+        .order_by("type_order", "parent__name", "name")
     )
 
     context = {

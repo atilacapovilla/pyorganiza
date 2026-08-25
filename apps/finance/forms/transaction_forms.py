@@ -4,6 +4,7 @@ from django.forms.models import ModelChoiceField, ModelChoiceIterator
 from apps.finance.models.category import Category
 from apps.finance.models.account import Account
 from apps.finance.models.transaction import Transaction
+from apps.finance.utils.category_ordering import type_priority_annotation
 
 
 class HierarchicalCategoryField(ModelChoiceField):
@@ -43,7 +44,9 @@ class TransactionForm(forms.ModelForm):
         self.fields["category"] = HierarchicalCategoryByTypeField(
             queryset=Category.objects.filter(
                 user=user, parent__isnull=False
-            ).select_related("parent").order_by("category_type", "parent__name", "name"),
+            ).select_related("parent").annotate(
+                type_order=type_priority_annotation()
+            ).order_by("type_order", "parent__name", "name"),
             widget=self.fields["category"].widget,
             required=self.fields["category"].required,
             label=self.fields["category"].label,

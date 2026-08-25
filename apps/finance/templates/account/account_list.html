@@ -36,8 +36,10 @@
                                 <tr>
                                     <th class="text-muted small fw-semibold text-uppercase ls-1">Nome</th>
                                     <th class="text-muted small fw-semibold text-uppercase ls-1">Tipo</th>
-                                    <th class="text-muted small fw-semibold text-uppercase ls-1">Saldo Inicial</th>
-                                    <th class="text-muted small fw-semibold text-uppercase ls-1">Saldo Atual</th>
+                                    <th class="text-muted small fw-semibold text-uppercase ls-1 text-center">Reserva de Emergencia</th>
+                                    <th class="text-muted small fw-semibold text-uppercase ls-1 text-center">Liquidez Disponível</th>
+                                    <th class="text-muted small fw-semibold text-uppercase ls-1 text-end">Saldo Inicial</th>
+                                    <th class="text-muted small fw-semibold text-uppercase ls-1 text-end">Saldo Atual</th>
                                     <th class="text-muted small fw-semibold text-uppercase ls-1 text-end">Ações</th>
                                 </tr>
                             </thead>
@@ -51,9 +53,23 @@
                                         {{ account.name }}
                                     </td>
                                     <td><span class="badge bg-info bg-opacity-10 text-info">{{ account.get_type_display }}</span></td>
-                                    <td>R$ {{ account.opening_balance }}</td>
-                                    <td class="fw-semibold {% if account.current_balance >= 0 %}text-success{% else %}text-danger{% endif %}">
-                                        R$ {{ account.current_balance }}
+                                    <td class="text-center">
+                                        {% if account.include_in_emergency_reserve %}
+                                        <span class="badge bg-success bg-opacity-10 text-success"><i class="bi bi-check-circle-fill"></i></span>
+                                        {% else %}
+                                        <span class="badge bg-danger bg-opacity-10 text-danger"><i class="bi bi-x-circle-fill"></i></span>
+                                        {% endif %}
+                                    </td>
+                                     <td class="text-center">
+                                        {% if account.include_in_liquidity %}
+                                        <span class="badge bg-success bg-opacity-10 text-success"><i class="bi bi-check-circle-fill"></i></span>
+                                        {% else %}
+                                        <span class="badge bg-danger bg-opacity-10 text-danger"><i class="bi bi-x-circle-fill"></i></span>
+                                        {% endif %}
+                                    </td>
+                                    <td class="text-end">{{ account.opening_balance|floatformat:"2g"  }}</td>
+                                    <td class="fw-semibold text-end {% if account.current_balance >= 0 %}text-success{% else %}text-danger{% endif %}">
+                                        {{ account.current_balance|floatformat:"2g" }}
                                     </td>
                                     <td class="text-end">
                                         <div class="btn-group" role="group">

@@ -1,14 +1,13 @@
 import sweetify
 
-from django.contrib import messages
 from django.contrib.auth.mixins import LoginRequiredMixin
-from django.shortcuts import render
 from django.urls import reverse_lazy
 from django.views.generic.list import ListView
 from django.views.generic.edit import DeleteView, CreateView, UpdateView
 
 from apps.finance.models.category import Category
 from apps.finance.forms.category_forms import CategoryForm
+from apps.finance.utils.category_ordering import sort_categories
 
 
 class CategoryList(LoginRequiredMixin, ListView):
@@ -21,18 +20,24 @@ class CategoryList(LoginRequiredMixin, ListView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        categories = self.get_queryset()
-        context["tree"] = self.build_tree(categories)
+        context["tree"] = self.build_tree(
+            sort_categories(list(self.get_queryset()))
+        )
         return context
 
-    def build_tree(self, categories, parent=None):
-        nodes = []
-        for category in categories.filter(parent=parent):
-            nodes.append({
-                "category": category,
-                "children": self.build_tree(categories, category),
-            })
-        return nodes
+    @staticmethod
+    def build_tree(categories):
+        children_map = {}
+        for category in categories:
+            children_map.setdefault(category.parent_id, []).append(category)
+
+        def recurse(parent_id):
+            return [
+                {"category": category, "children": recurse(category.id)}
+                for category in children_map.get(parent_id, [])
+            ]
+
+        return recurse(None)
 
 
 class CategoryCreate(LoginRequiredMixin, CreateView):
@@ -40,6 +45,11 @@ class CategoryCreate(LoginRequiredMixin, CreateView):
     template_name = "category/category_form.html"
     form_class = CategoryForm
     success_url = reverse_lazy("category-create")
+
+    def get_form_kwargs(self):
+        kwargs = super().get_form_kwargs()
+        kwargs["user"] = self.request.user
+        return kwargs
 
     def form_valid(self, form):
         form.instance.user = self.request.user
@@ -58,6 +68,11 @@ class CategoryUpdate(LoginRequiredMixin, UpdateView):
     template_name = "category/category_form.html"
     form_class = CategoryForm
     success_url = reverse_lazy("categories")
+
+    def get_form_kwargs(self):
+        kwargs = super().get_form_kwargs()
+        kwargs["user"] = self.request.user
+        return kwargs
 
     def form_valid(self, form):
         sweetify.toast(
@@ -93,16 +108,3 @@ class CategoryDelete(LoginRequiredMixin, DeleteView):
     def get_queryset(self):
         base_qs = super(CategoryDelete, self).get_queryset()
         return base_qs.filter(user=self.request.user)
-
-
-# def category_list_method(request):
-#     categories = Category.objects.values_list(
-#         'method', 'name').filter(user=request).order_by('method')
-
-#     categories_method = {}
-#     method_ant = 0
-#     for method, name in categories:
-#         if method != method_ant:
-#             categories_method[method] = {}
-#             method_ant == method
-#         categories_method[method] = {'name': name, }

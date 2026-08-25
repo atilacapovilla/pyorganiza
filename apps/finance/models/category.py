@@ -24,6 +24,18 @@ class Category(models.Model):
 
     essential = models.BooleanField(default=False, verbose_name="Essencial")
 
+    SPENDING_TYPE_CHOICES = [
+        ("fixa", "Fixa"),
+        ("variavel", "Variável"),
+    ]
+
+    spending_type = models.CharField(
+        max_length=10,
+        choices=SPENDING_TYPE_CHOICES,
+        default="variavel",
+        verbose_name="Tipo de Gasto",
+    )
+
     metod_503020 = models.CharField(
         max_length=10,
         choices=[

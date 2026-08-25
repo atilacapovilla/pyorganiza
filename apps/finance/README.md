@@ -1,6 +1,9 @@
 # apps/finance — Módulo de Finanças Pessoais
 
-Aplicação Django para controle de finanças pessoais com suporte a contas, categorias, transações, transferências, cartões de crédito, planejamento mensal, balancete comparativo e extratos.
+Aplicação Django para controle de finanças pessoais com suporte a contas, categorias hierárquicas, transações, transferências, cartões de crédito, planejamento mensal (com consulta realizado × planejado), balancete comparativo, extratos em HTML/PDF e importação/conciliação de arquivos OFX.
+
+> **Nota:** esta documentação reflete o estado do código após a revisão de 2026-08-24
+> (ver `docs/analise_finances.md`).
 
 ---
 
@@ -9,230 +12,146 @@ Aplicação Django para controle de finanças pessoais com suporte a contas, cat
 ```
 apps/finance/
 ├── __init__.py
-├── admin.py
-├── apps.py
+├── admin.py                     # 5 modelos registrados no admin
+├── apps.py                      # FinanceConfig (BigAutoField)
+├── signals.py                   # vazio (signals removidos)
 ├── fixtures/
-│   └── category.json          # Dados iniciais de categorias
+│   └── category.json            # Categorias iniciais
 ├── forms/
-│   ├── __init__.py
-│   ├── account_forms.py
-│   ├── category_forms.py
-│   ├── planning_forms.py
-│   ├── transaction_forms.py
-│   └── transfer_forms.py
-├── migrations/
-│   └── 0001_initial.py ... 0005_*.py
+│   ├── account_forms.py         # AccountForm (ModelForm)
+│   ├── category_forms.py        # CategoryForm (hierarquia filtrada por usuário)
+│   ├── import_forms.py          # ImportUploadForm (.ofx/.qfx + conta destino)
+│   ├── planning_forms.py        # PlanningForm (mês/ano)
+│   ├── transaction_forms.py     # TransactionForm (categorias agrupadas por tipo)
+│   └── transfer_forms.py        # TransferForm (valida origem ≠ destino)
 ├── models/
-│   ├── __init__.py
-│   ├── account.py
-│   ├── category.py
-│   ├── planning.py
-│   └── transaction.py
-├── static/
-│   └── css/
-│       ├── balancete_pdf.css
-│       └── extrato_pdf.css
+│   ├── account.py               # Account + AccountQuerySet.with_current_balance()
+│   ├── category.py              # Category (árvore, 50/30/20, transitória)
+│   ├── imported_transaction.py  # ImportedTransaction (conciliação OFX)
+│   ├── planning.py              # Planning (planejamento mensal por categoria)
+│   └── transaction.py           # Transaction (receitas/despesas)
+├── tests/
+│   ├── base.py                  # BaseFinanceTestCase (fixtures compartilhadas)
+│   ├── test_models.py           # defaults de data, current_balance
+│   ├── test_transfer.py         # fluxo de transferência
+│   ├── test_cards.py            # pagamento de fatura
+│   ├── test_import.py           # upload OFX e reconciliação
+│   ├── test_balancete.py        # balancete comparativo
+│   └── test_views.py            # isolamento de usuário, extrato, dashboard
+├── static/css/
+│   ├── balancete_pdf.css
+│   ├── extrato_pdf.css
+│   └── planejamento_pdf.css
 ├── templates/
-│   ├── account/
-│   ├── balancete/
-│   ├── cards/
-│   ├── category/
-│   ├── dashboard/
-│   ├── extrato/
-│   ├── planning/
-│   ├── transaction/
-│   └── transfer/
-├── urls/
-│   ├── __init__.py
-│   ├── account_urls.py
-│   ├── balancete_urls.py
-│   ├── cards_urls.py
-│   ├── category_urls.py
-│   ├── dashboard_urls.py
-│   ├── extrato_urls.py
-│   ├── planning_urls.py
-│   ├── transaction_urls.py
-│   └── transfer_urls.py
+│   ├── account/ balancete/ cards/ category/ dashboard/
+│   ├── extrato/ import/ planning/ transaction/ transfer/
+├── urls/                        # um módulo por domínio (incluídos na raiz do projeto)
 ├── utils/
-│   ├── finance_grafics.py      # Gráficos para dashboard
-│   ├── finance_metrics.py      # Métricas financeiras
-│   └── utils.py                # Utilitários (pagamento cartão)
-├── views/
-│   ├── __init__.py
-│   ├── account_views.py
-│   ├── balancete_views.py
-│   ├── card_views.py
-│   ├── category_views.py
-│   ├── dashboard_views.py
-│   ├── extrato_views.py
-│   ├── planning_views.py
-│   ├── transaction_views.py
-│   └── transfer_views.py
-└── README.md                   # Este arquivo
+│   ├── finance_grafics.py       # dados dos gráficos (1 query/mês via TruncMonth)
+│   ├── finance_metrics.py       # saldos, pendentes, método 50/30/20
+│   ├── ofx_parser.py            # wrapper ofxparse
+│   └── utils.py                 # cards_payment() — pagamento de fatura
+└── views/                       # um módulo por domínio
 ```
 
 ---
 
-## Modelos (Models)
+## Modelos
 
-### `Account` (`models/account.py`)
-Representa uma conta financeira do usuário.
-
+### `Account`
 | Campo | Tipo | Descrição |
 |---|---|---|
 | `name` | CharField(50) | Nome da conta |
-| `type` | CharField(2) | Tipo: CC (Conta Corrente), DN (Dinheiro), CT (Cartão Crédito), IN (Investimentos) |
-| `logo` | ImageField | Logotipo (redimensionado para 32x32 no `save()`) |
-| `opening_balance` | DecimalField | Saldo inicial |
-| `current_balance` | DecimalField | Saldo atual (atualizado via `get_finance_accounts_balance()`) |
-| `user` | ForeignKey(User) | Usuário dono da conta |
-| `active` | BooleanField | Conta ativa ou não |
-| `created_at` / `updated_at` | DateTimeField | Timestamps |
+| `type` | CharField(2) | CC, DN, CT ou IN |
+| `logo` | ImageField | Redimensionado para 32×32 no `save()` |
+| `opening_balance` | Decimal(10,2) | Saldo inicial |
+| `user` | FK(User) CASCADE | Dono |
+| `active` | Boolean | Conta ativa |
 
-### `Category` (`models/category.py`)
-Categoriza receitas, despesas e investimentos.
+**Regra única de saldo** (`current_balance`, fonte de verdade no model):
+- **CC/DN**: apenas transações **pagas** contam → `opening_balance + ΣC − ΣD`.
+- **CT/IN**: todas as transações contam.
+- Em listas, use `Account.objects.with_current_balance()` (1 query para todas as contas, disponível como `computed_balance`). A property `current_balance` reutiliza o valor anotado quando presente.
 
-| Campo | Tipo | Descrição |
-|---|---|---|
-| `user` | ForeignKey(User) | Usuário |
-| `name` | CharField(100) | Nome |
-| `color` | CharField(7) | Cor hexadecimal (ex: `#3498db`) |
-| `category_type` | CharField(15) | `receita`, `despesa` ou `investimento` |
-| `essential` | BooleanField | Se é despesa essencial |
-| `metod_503020` | CharField(10) | Classificação 50/30/20: `50` (necessidades), `30` (desejos), `20` (poupança), `00` (N/A receitas) |
-| `parent` | ForeignKey(self) | Categoria pai (para hierarquia) |
+### `Category`
+Hierárquica (`parent FK self`). Campos: `name(100)`, `color(7)`, `category_type ∈ {receita, despesa, investimento, transitoria}`, `essential(bool)`, `spending_type ∈ {fixa, variavel}` (default `variavel`), `metod_503020 ∈ {50,30,20,00}`.
+Categorias `transitoria` são excluídas de métricas/gráficos/balancete/planejamento (usadas em transferências/pagamento de cartão).
 
-### `Transaction` (`models/transaction.py`)
-Registro de receitas e despesas.
+**Ordenação padrão** (`utils/category_ordering.py`): primeiro por tipo na ordem das choices do model (Receitas → Despesas → Investimentos → Transitórias), depois alfabético (sem acento, case-insensitive) em cada nível. Aplicada nas árvores (categorias, balancete, planejamento) e nos dropdowns de transação, transferência e importação.
 
-| Campo | Tipo | Descrição |
-|---|---|---|
-| `transaction_date` | DateField | Data da transação |
-| `due_date` | DateField | Data de vencimento |
-| `is_paid` | BooleanField | Se foi pago/recebido |
-| `account` | ForeignKey(Account) | Conta vinculada |
-| `category` | ForeignKey(Category) | Categoria |
-| `description` | CharField(50) | Descrição |
-| `transaction_value` | DecimalField | Valor |
-| `type` | CharField(1) | `C` (Crédito/Receita) ou `D` (Débito/Despesa) |
-| `user` | ForeignKey(User) | Usuário |
-| `active` | BooleanField | Ativa ou não |
+### `Transaction`
+`transaction_date` e `due_date` com default `date.today()` (avaliado na criação), `is_paid`, `account FK PROTECT`, `category FK PROTECT`, `description(50)`, `transaction_value(10,2)`, `type ∈ {C, D}` (sempre positivo), `user FK`, `active`.
 
-### `Planning` (`models/planning.py`)
-Planejamento mensal por categoria.
+### `Planning`
+`(user, month, year, category)` único; category FK CASCADE; `value(10,2)`.
 
-| Campo | Tipo | Descrição |
-|---|---|---|
-| `user` | ForeignKey(User) | Usuário |
-| `month` | IntegerField | Mês (1-12) |
-| `year` | IntegerField | Ano |
-| `category` | ForeignKey(Category) | Categoria (folha) |
-| `value` | DecimalField | Valor planejado |
-
-`unique_together = (user, month, year, category)`
+### `ImportedTransaction`
+Conciliação OFX: `bank_fit_id` (dedup), `status ∈ {pending, matched, ignored, imported}`, `matched_transaction FK SET_NULL`.
 
 ---
 
-## URLs e Views
+## Regras de Negócio
 
-| Rota | View | Descrição |
-|---|---|---|
-| `accounts/` | `AccountList` | Lista contas (com busca por nome) |
-| `account/create/` | `AccountCreate` | Criar conta |
-| `account/update/<pk>/` | `AccountUpdate` | Editar conta |
-| `account/delete/<pk>/` | `AccountDelete` | Excluir conta |
-| `categories/` | `CategoryList` | Lista categorias (árvore hierárquica) |
-| `category/create/` | `CategoryCreate` | Criar categoria |
-| `category/update/<pk>/` | `CategoryUpdate` | Editar categoria |
-| `category/delete/<pk>/` | `CategoryDelete` | Excluir categoria |
-| `transactions/` | `TransactionList` | Lista transações (filtro por data/conta, paginação 100) |
-| `transaction/create/` | `TransactionCreate` | Criar transação |
-| `transaction/update/<pk>/` | `TransactionUpdate` | Editar transação |
-| `transaction/delete/<pk>/` | `TransactionDelete` | Excluir transação |
-| `transfer/` | `Transfer` (function) | Transferência entre contas (cria 2 transações: débito na origem, crédito no destino) |
-| `cards/` | `CardList` (function) | Gerenciamento de faturas de cartão de crédito |
-| `dashboard/` | `dashboard` (function) | Dashboard com gráficos e métricas |
-| `extrato/` | `extrato` (function) | Extrato detalhado (filtros por data, conta, status) |
-| `extrato/pdf/` | `extrato_pdf` (function) | Extrato em PDF (via WeasyPrint) |
-| `balancete/` | `balancete` (function) | Balancete mensal comparativo mês atual vs anterior |
-| `balancete/pdf/` | `balancete_pdf` (function) | Balancete em PDF |
-| `planejamento/` | `planning_definir` (function) | Definir planejamento mensal por categoria |
-
-Todas as views exigem login (`LoginRequiredMixin` ou decorador `@login_required`).
+- **Transferência** (`transfer/`): cria par D (origem) + C (destino), ambos `is_paid=True`, dentro de `transaction.atomic`. Origem ≠ destino validada no form. Categoria deve ser filha (`parent__isnull=False`).
+- **Pagamento de cartão** (`cards_payment`): marca como pagas as compras **não pagas** do vencimento informado e cria par "Pagamento Cartão de Crédito" (D na conta débito, C no cartão).
+- **Balancete**: mês consultado vs mês anterior (janeiro volta para dezembro do ano anterior). Árvore agrega valores dos filhos nos pais.
+- **Planejamento**: definido por categoria folha; consulta compara planejado × realizado com semáforo (% ≤80 verde / ≤100 amarelo / >100 vermelho para despesas; invertido para receitas/investimentos).
+- **Isolamento multiusuário**: todos os querysets filtram por `request.user`; os forms recebem o usuário e nunca expõem objetos de terceiros.
 
 ---
 
-## Funcionalidades Principais
+## Rotas
 
-### 1. **Contas** (CRUD)
-Cadastro de contas correntes, dinheiro, cartão de crédito e investimentos. Redimensiona logo para 32x32 automaticamente.
+| Rota | Nome | Descrição |
+|---|---|---|
+| `accounts/` `account/create\|update\|delete/` | CRUD de contas (CBV, paginação 10) |
+| `categories/` `category/create\|update\|delete/` | CRUD de categorias (lista em árvore) |
+| `transactions/` `transaction/create\|update\|delete/` | CRUD de transações (paginação 100, filtros período/conta) |
+| `transfer/` | Transferência entre contas |
+| `cards/` | Faturas e pagamento de cartões (tipo CT) |
+| `dashboard/` | Métricas e gráficos (mês/ano selecionáveis) |
+| `extrato/` + `extrato/pdf/` | Extrato com saldo corrido + PDF |
+| `balancete/` + `balancete/pdf/` | Comparativo mensal por categoria + PDF |
+| `planejamento/` | Definir planejamento do mês |
+| `planejamento/consulta/` (+`pdf/`) | Realizado × planejado + PDF |
+| `import/` | Upload OFX |
+| `import/reconciliation/` | Conciliar (match/accept/ignore por `<pk>`) |
 
-### 2. **Categorias** (CRUD com hierarquia)
-Categorias em árvore (pai/filho). Suporte ao método 50/30/20 e marcação de essencialidade. O form de categoria valida a hierarquia para evitar loops.
-
-### 3. **Transações** (CRUD)
-Registro de receitas (crédito) e despesas (débito) com data, vencimento, conta e categoria. Filtro por período e conta na listagem.
-
-### 4. **Transferências**
-Transferência entre contas do mesmo usuário. Cria automaticamente um débito na conta de origem e um crédito na conta de destino. Valida que origem e destino são diferentes.
-
-### 5. **Cartão de Crédito**
-Recupera transações não pagas de contas do tipo "CT" por data de vencimento. Gera o pagamento como uma despesa na conta débito e um crédito na conta cartão.
-
-### 6. **Dashboard**
-Métricas e gráficos por mês/ano:
-- Saldo (receitas - despesas)
-- Saldo por conta
-- Pendências a pagar/receber
-- Método 50/30/20 (desvio padrão)
-- Gráfico de despesas essenciais vs não essenciais (pizza)
-- Gráfico de receitas vs despesas por mês (barras)
-
-### 7. **Extrato**
-Extrato detalhado com filtros por período, conta e status (todos, pagos, abertos, vencidos). Exibe saldo corrente após cada transação. Geração de PDF.
-
-### 8. **Balancete**
-Comparativo de receitas, despesas e investimentos entre o mês atual e o anterior, organizado por árvore de categorias. Geração de PDF.
-
-### 9. **Planejamento**
-Define valores planejados para cada categoria folha (sem filhos) em um determinado mês/ano. Usa `update_or_create` para persistir.
+Todas as views exigem login.
 
 ---
 
 ## Utilitários
 
-### `utils/utils.py`
-- `cards_payment()`: Processa pagamento de fatura de cartão de crédito. Marca transações como pagas e cria transações de débito/crédito.
+- **finance_metrics**: saldo do mês (com variação % vs anterior), últimos 6 meses, saldo por conta (via `with_current_balance()`), pendentes/projeção, método 50/30/20.
+- **finance_grafics**: pizza essenciais × não essenciais (cores por categoria); receitas × despesas do ano (agregação única com `TruncMonth`).
+- **ofx_parser.parse_ofx**: retorna `{bank_fit_id, transaction_date, description, transaction_value, type}` por transação.
 
-### `utils/finance_metrics.py`
-- `get_finance_balance()`: Saldo do mês (receitas - despesas).
-- `get_finance_accounts_balance()`: Saldo atual de cada conta (CC e DN calculados com transações pagas).
-- `get_finance_pendents()`: Valores pendentes (não pagos) e saldo projetado.
-- `get_finance_method()`: Análise do método 50/30/20 com desvios.
+---
 
-### `utils/finance_grafics.py`
-- `get_finance_expense_month()`: Despesas do mês separadas por essenciais/não essenciais para gráfico de pizza.
-- `get_finance_incomes_expense_year()`: Receitas e despesas por mês no ano para gráfico de barras.
+## Testes
+
+```bash
+python manage.py test apps.finance.tests
+```
+
+34 testes cobrindo: defaults de data do model, semântica de `current_balance` (CC/DN × CT/IN, isolamento por usuário), transferências, pagamento de cartão (inclusive não recobrar fatura paga), upload/dedup OFX, reconciliação (match/accept/ignore, proteção entre usuários), balancete (totais, rollover janeiro→dezembro, agregação pai/filho), isolamento do CategoryForm, extrato e dashboard.
+
+---
+
+## Dependências Externas
+
+- `Django` 5.x
+- `Pillow` (redimensionamento de logo)
+- `weasyprint` (PDFs)
+- `sweetify` (toasts)
+- `django-crispy-forms` + `crispy-bootstrap5`
+- `ofxparse` (importação OFX/QFX)
 
 ---
 
 ## Observações Técnicas
 
-- **Autenticação**: Todas as views filtram por `user=request.user`, garantindo isolamento de dados entre usuários.
-- **PDF**: Geração de PDF usando `weasyprint` com folhas de estilo CSS dedicadas.
-- **Notificações**: Uso da biblioteca `sweetify` para toasts de sucesso/erro.
-- **Redimensionamento de Imagem**: No `save()` de `Account`, redimensiona o logo para 32x32 usando PIL.
-- **Forms**: `TransactionForm` filtra contas e categorias por usuário e apenas categorias filhas (`parent__isnull=False`). `CategoryForm` constrói hierarquia com indentação e evita loops. `TransferForm` valida que origem ≠ destino.
-- **Cascata de Deleção**: `Planning` usa `CASCADE`; `Transaction` usa `PROTECT` (não permite excluir conta/categoria com transações vinculadas).
-- **Fixtures**: `category.json` contém dados iniciais para popular categorias.
-- **Registro no Admin**: Todos os 4 modelos estão registrados no Django Admin.
-
----
-
-## Dependências Externas (identificadas)
-
-- `Django` (framework)
-- `Pillow` / `PIL` (redimensionamento de imagem)
-- `weasyprint` (geração de PDF)
-- `sweetify` (toasts/notificações)
-- `django-crispy-forms` (configurado com bootstrap5)
+- PDFs renderizados com WeasyPrint usando CSS em `static/css/` localizado via `django.contrib.staticfiles.finders`.
+- `AccountQuerySet.with_current_balance()` usa agregação condicional em 1 query; o admin sobrescreve `get_queryset()` para usá-la.
+- Migrações relevantes: `0008` removeu o campo `current_balance` (virou property), `0009` criou `ImportedTransaction`, `0010` corrigiu defaults de data de `Transaction`.

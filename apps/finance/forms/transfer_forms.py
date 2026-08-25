@@ -2,6 +2,7 @@ from django import forms
 
 from apps.finance.models.category import Category
 from apps.finance.models.account import Account
+from apps.finance.utils.category_ordering import sort_categories
 
 
 class TransferForm(forms.Form):
@@ -44,9 +45,12 @@ class TransferForm(forms.Form):
             (account.id, account) for account in Account.objects.filter(user=user)
         ]
 
-        categories = Category.objects.filter(
-            user=user, parent__isnull=False
-        ).select_related("parent").order_by("category_type", "parent__name", "name")
+        categories = sort_categories(
+            list(
+                Category.objects.filter(user=user, parent__isnull=False)
+                .select_related("parent")
+            )
+        )
 
         CATEGORY_OPTIONS = []
         for cat in categories:

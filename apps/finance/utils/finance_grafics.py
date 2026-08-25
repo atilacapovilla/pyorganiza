@@ -1,4 +1,5 @@
-from django.db.models import Sum
+from django.db.models import Q, Sum
+from django.db.models.functions import TruncMonth
 
 from apps.finance.models.transaction import Transaction
 
@@ -16,11 +17,10 @@ def get_finance_expense_month(request, month, year):
         .annotate(total_expenses=Sum("transaction_value"))
         .filter(
             user=request.user,
-            type="D",
+            category__category_type="despesa",
             transaction_date__year=year,
             transaction_date__month=month,
         )
-        .exclude(category__category_type="transitoria")
         .order_by("-total_expenses")
     )
 
@@ -36,7 +36,14 @@ def get_finance_expense_month(request, month, year):
         data_non_essential.append(int(entry["total_expenses"]))
         colors_non_essential.append(entry["category__color"])
 
-    return labels_essential, data_essential, colors_essential, labels_non_essential, data_non_essential, colors_non_essential
+    return (
+        labels_essential,
+        data_essential,
+        colors_essential,
+        labels_non_essential,
+        data_non_essential,
+        colors_non_essential,
+    )
 
 
 def get_finance_incomes_expense_year(request, year):
@@ -54,31 +61,74 @@ def get_finance_incomes_expense_year(request, year):
         "Nov",
         "Dez",
     ]
-    data_expenses_year = []
-    data_incomes_year = []
-    dates = [i for i in range(1, 13, 1)]
+    data_expenses_year = [0] * 12
+    data_incomes_year = [0] * 12
 
-    transactions = Transaction.objects.filter(
-        user=request.user, transaction_date__year=year
-    ).exclude(category__category_type="transitoria")
-
-    for date in dates:
-        expense = (
-            transactions.filter(transaction_date__month=date, type="D").aggregate(
-                Sum("transaction_value")
-            )["transaction_value__sum"]
-            or 0
+    monthly_totals = (
+        Transaction.objects.filter(user=request.user, transaction_date__year=year)
+        .exclude(category__category_type="transitoria")
+        .annotate(month=TruncMonth("transaction_date"))
+        .values("month")
+        .annotate(
+            expenses=Sum(
+                "transaction_value",
+                filter=Q(category__category_type="despesa"),
+            ),
+            incomes=Sum(
+                "transaction_value",
+                filter=Q(category__category_type="receita"),
+            ),
         )
+    )
 
-        data_expenses_year.append(int(expense))
-
-        income = (
-            transactions.filter(transaction_date__month=date, type="C").aggregate(
-                Sum("transaction_value")
-            )["transaction_value__sum"]
-            or 0
-        )
-
-        data_incomes_year.append(int(income))
+    for row in monthly_totals:
+        month_index = row["month"].month - 1
+        data_expenses_year[month_index] = int(row["expenses"] or 0)
+        data_incomes_year[month_index] = int(row["incomes"] or 0)
 
     return labels_year, data_expenses_year, data_incomes_year
+
+
+def get_finance_expense_spending_type(request, month, year):
+    labels_fixed = []
+    data_fixed = []
+    colors_fixed = []
+    labels_variable = []
+    data_variable = []
+    colors_variable = []
+
+    queryset = (
+        Transaction.objects.values(
+            "category__name", "category__color", "category__spending_type"
+        )
+        .annotate(total_expenses=Sum("transaction_value"))
+        .filter(
+            user=request.user,
+            category__category_type="despesa",
+            transaction_date__year=year,
+            transaction_date__month=month,
+        )
+        .order_by("-total_expenses")
+    )
+
+    for entry in queryset:
+        name = entry["category__name"]
+        color = entry["category__color"]
+        total = int(entry["total_expenses"])
+        if entry["category__spending_type"] == "fixa":
+            labels_fixed.append(name)
+            data_fixed.append(total)
+            colors_fixed.append(color)
+        else:
+            labels_variable.append(name)
+            data_variable.append(total)
+            colors_variable.append(color)
+
+    return (
+        labels_fixed,
+        data_fixed,
+        colors_fixed,
+        labels_variable,
+        data_variable,
+        colors_variable,
+    )

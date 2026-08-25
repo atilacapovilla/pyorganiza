@@ -1,7 +1,6 @@
 import sweetify
 from django.contrib.auth.decorators import login_required
 from django.db.models import Sum
-from django.shortcuts import redirect
 from django.shortcuts import render
 
 from apps.finance.models.category import Category

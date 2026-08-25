@@ -9,13 +9,20 @@ class CategoryForm(forms.ModelForm):
         label="Cor",
     )
 
-    def __init__(self, *args, **kwargs):
+    def __init__(self, *args, user=None, **kwargs):
         super().__init__(*args, **kwargs)
         self.fields["parent"].required = False
-        self.fields["parent"].choices = self._build_hierarchical_choices()
+        categories = self._get_user_categories(user)
+        self.fields["parent"].choices = self._build_hierarchical_choices(categories)
 
-    def _build_hierarchical_choices(self):
-        categories = list(Category.objects.all().select_related("parent"))
+    def _get_user_categories(self, user):
+        if user is None:
+            return Category.objects.none()
+        return list(
+            Category.objects.filter(user=user).select_related("parent")
+        )
+
+    def _build_hierarchical_choices(self, categories):
 
         exclude_ids = set()
         if self.instance and self.instance.pk:
@@ -46,4 +53,4 @@ class CategoryForm(forms.ModelForm):
     class Meta:
         model = Category
         fields = ["name", "color", "category_type",
-                  "essential", "metod_503020", "parent"]
+                  "essential", "spending_type", "metod_503020", "parent"]

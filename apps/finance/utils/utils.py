@@ -8,9 +8,9 @@ from apps.finance.models.transaction import Transaction
 def cards_payment(user, account_debit, category, account_id, due_date):
     today = date.today()
     due_date = due_date or today
-    
+
     cards = Transaction.objects.filter(
-        user=user, account__id=account_id, due_date=due_date, type="D"
+        user=user, account__id=account_id, due_date=due_date, type="D", is_paid=False
     )
     total_card = (
         cards.aggregate(Sum("transaction_value"))["transaction_value__sum"] or 0

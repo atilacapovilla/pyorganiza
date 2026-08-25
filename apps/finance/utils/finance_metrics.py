@@ -1,5 +1,7 @@
 from datetime import date
-from django.db.models import Q, Sum
+from decimal import Decimal
+
+from django.db.models import Sum
 
 from apps.finance.models.account import Account
 from apps.finance.models.transaction import Transaction
@@ -13,16 +15,16 @@ def _get_month_totals(request, month, year):
     ).exclude(category__category_type="transitoria")
 
     expenses = (
-        transactions.filter(type="D").aggregate(Sum("transaction_value"))[
-            "transaction_value__sum"
-        ]
+        transactions.filter(category__category_type="despesa").aggregate(
+            Sum("transaction_value")
+        )["transaction_value__sum"]
         or 0
     )
 
     incomes = (
-        transactions.filter(type="C").aggregate(Sum("transaction_value"))[
-            "transaction_value__sum"
-        ]
+        transactions.filter(category__category_type="receita").aggregate(
+            Sum("transaction_value")
+        )["transaction_value__sum"]
         or 0
     )
 
@@ -105,56 +107,20 @@ def get_finance_last_months(request, month, year):
 
 
 def get_finance_accounts_balance(request):
-    today = date.today()
-    balance_total = 0
-
-    accounts = Account.objects.filter(
-        Q(user=request.user),
-        Q(type="CC") | Q(type="DN"),
+    accounts = (
+        Account.objects.filter(user=request.user, type__in=("CC", "DN"))
+        .with_current_balance()
     )
-
-    for account in accounts:
-        transactions = Transaction.objects.filter(
-            account=account, is_paid=True)
-        expenses = (
-            transactions.filter(type="D").aggregate(Sum("transaction_value"))[
-                "transaction_value__sum"
-            ]
-            or 0
-        )
-        incomes = (
-            transactions.filter(type="C").aggregate(Sum("transaction_value"))[
-                "transaction_value__sum"
-            ]
-            or 0
-        )
-        balance = account.opening_balance + incomes - expenses
-        account.__dict__["current_balance"] = balance
-        balance_total += balance
+    balance_total = sum(
+        account.computed_balance for account in accounts
+    )
 
     accounts_other = (
         Account.objects.filter(user=request.user)
-        .exclude(type="CC")
-        .exclude(type="DN")
+        .exclude(type__in=("CC", "DN"))
         .order_by("type", "name")
+        .with_current_balance()
     )
-
-    for account in accounts_other:
-        transactions = Transaction.objects.filter(account=account)
-        expenses = (
-            transactions.filter(type="D").aggregate(Sum("transaction_value"))[
-                "transaction_value__sum"
-            ]
-            or 0
-        )
-        incomes = (
-            transactions.filter(type="C").aggregate(Sum("transaction_value"))[
-                "transaction_value__sum"
-            ]
-            or 0
-        )
-        balance = account.opening_balance + incomes - expenses
-        account.__dict__["current_balance"] = balance
 
     finance_accounts_balance = dict(
         accounts=accounts,
@@ -165,8 +131,6 @@ def get_finance_accounts_balance(request):
 
 
 def get_finance_pendents(total_balance, request):
-    today = date.today()
-
     expenses_pendents = Transaction.objects.filter(
         user=request.user,
         type="D",
@@ -215,29 +179,29 @@ def get_finance_method(request, month=None, year=None):
     ).exclude(category__category_type="transitoria")
 
     total_incomes = float(
-        transactions.filter(type="C")
+        transactions.filter(category__category_type="receita")
         .aggregate(Sum("transaction_value"))["transaction_value__sum"]
         or 0
     )
 
     expenses_essentials = float(
         transactions.filter(
-            type="D", category__metod_503020="50"
+            category__category_type="despesa", category__metod_503020="50"
         ).aggregate(Sum("transaction_value"))["transaction_value__sum"]
         or 0
     )
 
     expenses_superfluous = float(
         transactions.filter(
-            type="D", category__metod_503020="30"
+            category__category_type="despesa", category__metod_503020="30"
         ).aggregate(Sum("transaction_value"))["transaction_value__sum"]
         or 0
     )
 
     reserves = float(
-        transactions.filter(type="D", category__metod_503020="20").aggregate(
-            Sum("transaction_value")
-        )["transaction_value__sum"]
+        transactions.filter(
+            category__category_type="investimento", category__metod_503020="20"
+        ).aggregate(Sum("transaction_value"))["transaction_value__sum"]
         or 0
     )
 
@@ -260,4 +224,103 @@ def get_finance_method(request, month=None, year=None):
         essential_deviation=essential_deviation,
         superfluous_deviation=superfluous_deviation,
         reserves_deviation=reserves_deviation,
+    )
+
+
+MONTH_NAMES_PT = [
+    "Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho",
+    "Julho", "Agosto", "Setembro", "Outubro", "Novembro", "Dezembro",
+]
+
+
+def _essential_expenses_breakdown(user, reference_date):
+    """Retorna lista dos 6 meses e a média de despesas essenciais."""
+    month = reference_date.month
+    year = reference_date.year
+
+    rows = []
+    for _ in range(6):
+        month -= 1
+        if month == 0:
+            month = 12
+            year -= 1
+        total = (
+            Transaction.objects.filter(
+                user=user,
+                transaction_date__year=year,
+                transaction_date__month=month,
+                category__category_type="despesa",
+                category__essential=True,
+            ).aggregate(Sum("transaction_value"))["transaction_value__sum"]
+            or Decimal("0")
+        )
+        rows.append({
+            "month": month,
+            "year": year,
+            "label": f"{MONTH_NAMES_PT[month - 1]}/{year}",
+            "total": total,
+        })
+
+    rows.reverse()
+    count = len(rows)
+    grand_total = sum(r["total"] for r in rows)
+    average = grand_total / count if count else Decimal("0")
+    return rows, grand_total, average
+
+
+def get_finance_indicators(user):
+    """Reserva de emergência, patrimônio líquido e liquidez disponível."""
+    all_accounts = (
+        Account.objects.filter(user=user, active=True)
+        .with_current_balance()
+    )
+
+    reserve_value = sum(
+        a.computed_balance
+        for a in all_accounts
+        if a.include_in_emergency_reserve
+    )
+
+    liquidity_value = sum(
+        a.computed_balance
+        for a in all_accounts
+        if a.include_in_liquidity
+    )
+
+    assets_value = sum(a.computed_balance for a in all_accounts)
+
+    pending_receives = (
+        Transaction.objects.filter(
+            user=user, type="C", is_paid=False,
+        ).aggregate(Sum("transaction_value"))["transaction_value__sum"]
+        or Decimal("0")
+    )
+
+    pending_pays = (
+        Transaction.objects.filter(
+            user=user, type="D", is_paid=False,
+        ).aggregate(Sum("transaction_value"))["transaction_value__sum"]
+        or Decimal("0")
+    )
+
+    net_worth = assets_value + pending_receives - pending_pays
+
+    essential_rows, essential_total, avg_essential = (
+        _essential_expenses_breakdown(user, date.today())
+    )
+    reserve_months = (
+        reserve_value / avg_essential if avg_essential > 0 else None
+    )
+
+    return dict(
+        reserve_value=reserve_value,
+        reserve_months=reserve_months,
+        avg_essential_expenses=avg_essential,
+        essential_rows=essential_rows,
+        essential_total=essential_total,
+        net_worth=net_worth,
+        assets_value=assets_value,
+        pending_receives=pending_receives,
+        pending_pays=pending_pays,
+        liquidity_value=liquidity_value,
     )

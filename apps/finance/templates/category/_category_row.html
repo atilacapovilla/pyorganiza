@@ -22,10 +22,11 @@
 
     {% if not node.children %}
       <td>{{ category.get_category_type_display }}</td>
+      <td>{{ category.get_spending_type_display }}</td>
       <td>{{ category.essential|yesno:"Essencial,Não essencial" }}</td>
       <td>{{ category.get_metod_503020_display }}</td>
     {% else %}
-      <td colspan="3" class="text-muted"></td>
+      <td colspan="4" class="text-muted"></td>
     {% endif %}
 
     <td class="text-end">

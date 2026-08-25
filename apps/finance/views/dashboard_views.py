@@ -18,9 +18,14 @@ def dashboard(request):
     month = int(month_str) if month_str else today.month
     year = int(year_str) if year_str else today.year
 
-    labels_essential, data_essential, colors_essential, labels_non_essential, data_non_essential, colors_non_essential = (
-        finance_grafics.get_finance_expense_month(request, month, year)
-    )
+    (
+        labels_essential,
+        data_essential,
+        colors_essential,
+        labels_non_essential,
+        data_non_essential,
+        colors_non_essential,
+    ) = finance_grafics.get_finance_expense_month(request, month, year)
 
     labels_year, data_expenses_year, data_incomes_year = (
         finance_grafics.get_finance_incomes_expense_year(request, year)
@@ -40,6 +45,17 @@ def dashboard(request):
 
     finance_last_months = finance_metrics.get_finance_last_months(request, month, year)
 
+    finance_indicators = finance_metrics.get_finance_indicators(request.user)
+
+    (
+        labels_fixed,
+        data_fixed,
+        colors_fixed,
+        labels_variable,
+        data_variable,
+        colors_variable,
+    ) = finance_grafics.get_finance_expense_spending_type(request, month, year)
+
     months_list = [
         (1, "Janeiro"), (2, "Fevereiro"), (3, "Março"), (4, "Abril"),
         (5, "Maio"), (6, "Junho"), (7, "Julho"), (8, "Agosto"),
@@ -56,6 +72,12 @@ def dashboard(request):
         "labels_non_essential": json.dumps(labels_non_essential),
         "data_non_essential": json.dumps(data_non_essential),
         "colors_non_essential": json.dumps(colors_non_essential),
+        "labels_fixed": json.dumps(labels_fixed),
+        "data_fixed": json.dumps(data_fixed),
+        "colors_fixed": json.dumps(colors_fixed),
+        "labels_variable": json.dumps(labels_variable),
+        "data_variable": json.dumps(data_variable),
+        "colors_variable": json.dumps(colors_variable),
         "labels_year": json.dumps(labels_year),
         "data_expenses_year": json.dumps(data_expenses_year),
         "data_incomes_year": json.dumps(data_incomes_year),
@@ -63,6 +85,7 @@ def dashboard(request):
         "finance_pendents": finance_pendents,
         "finance_method": finance_method,
         "finance_last_months": finance_last_months,
+        "finance_indicators": finance_indicators,
         "selected_month": month,
         "selected_year": year,
         "months": months_list,

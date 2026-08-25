@@ -99,6 +99,72 @@
 
                     </div>
 
+                    <!-- Despesas essenciais (base da reserva) -->
+                    <div class="row g-4 mb-4">
+
+                        <div class="col-12 col-xl-6">
+                            <div class="border rounded-3 p-3 h-100">
+                                <h5 class="fw-bold mb-1">Despesas essenciais</h5>
+                                <p class="text-secondary small">Base para cálculo da reserva de emergência</p>
+                                <div class="table-responsive">
+                                    <table class="table table-sm table-hover align-middle mb-0">
+                                        <thead>
+                                            <tr>
+                                                <th>Mês/Ano</th>
+                                                <th class="text-end">Total</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            {% for row in finance_indicators.essential_rows %}
+                                            <tr>
+                                                <td>{{ row.label }}</td>
+                                                <td class="text-end">R$ {{ row.total|floatformat:2 }}</td>
+                                            </tr>
+                                            {% empty %}
+                                            <tr>
+                                                <td colspan="2" class="text-secondary">Sem dados nos últimos 6 meses.</td>
+                                            </tr>
+                                            {% endfor %}
+                                        </tbody>
+                                        <tfoot>
+                                            <tr class="fw-bold border-top">
+                                                <td>Total geral</td>
+                                                <td class="text-end">R$ {{ finance_indicators.essential_total|floatformat:2 }}</td>
+                                            </tr>
+                                            <tr class="fw-bold">
+                                                <td>Média mensal</td>
+                                                <td class="text-end">R$ {{ finance_indicators.avg_essential_expenses|floatformat:2 }}</td>
+                                            </tr>
+                                        </tfoot>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="col-12 col-xl-6">
+                            <div class="border rounded-3 p-3 h-100">
+                                <h5 class="fw-bold mb-1">Fixas × Variáveis</h5>
+                                <p class="text-secondary small">Composição dos gastos do mês</p>
+                                <div style="position: relative; height: 260px;">
+                                    <canvas id="fixed-variable"></canvas>
+                                </div>
+                                <div class="row text-center mt-3">
+                                    <div class="col">
+                                        <div class="text-secondary small">Fixas</div>
+                                        <strong id="fix-value">-</strong>
+                                        <div class="text-secondary small" id="fix-pct">-</div>
+                                    </div>
+                                    <div class="col">
+                                        <div class="text-secondary small">Variáveis</div>
+                                        <strong id="var-value">-</strong>
+                                        <div class="text-secondary small" id="var-pct">-</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                    </div>
+
                     <!-- Reserva de emergência + Patrimônio líquido -->
                     <div class="row g-4">
 
@@ -114,15 +180,22 @@
                                     </div>
                                 </div>
                                 <div class="display-6 fw-bold">
-                                    <span id="reserve-months">-</span>
+                                    {% if finance_indicators.reserve_months is not None %}
+                                    {{ finance_indicators.reserve_months|floatformat:1 }}
                                     <small class="fs-6 text-secondary">meses</small>
+                                    {% else %}
+                                    <small class="fs-6 text-secondary">Indisponível</small>
+                                    {% endif %}
                                 </div>
                                 <div class="progress mt-3 mb-2" style="height: 8px;">
-                                    <div class="progress-bar bg-success" id="reserve-bar" style="width: 0%;"></div>
+                                    <div class="progress-bar bg-success" style="width: {% widthratio finance_indicators.reserve_months 6 100 %}%;"></div>
                                 </div>
                                 <div class="d-flex justify-content-between small">
-                                    <span class="text-secondary">Reserva atual: <strong>{{ finance_accounts_balance.balance_total | floatformat:2 }}</strong></span>
-                                    <span>Meta: 6 meses</span>
+                                    <span class="text-secondary">Reserva: <strong>R$ {{ finance_indicators.reserve_value|floatformat:2 }}</strong></span>
+                                    <span class="text-secondary">Média gastos essenciais: <strong>R$ {{ finance_indicators.avg_essential_expenses|floatformat:2 }}</strong>/mês</span>
+                                </div>
+                                <div class="d-flex justify-content-between small mt-1">
+                                    <span class="text-secondary">Meta: 6 meses</span>
                                 </div>
                             </div>
                         </div>
@@ -132,26 +205,45 @@
                                 <div class="d-flex justify-content-between">
                                     <div>
                                         <h5 class="fw-bold">Patrimônio líquido</h5>
-                                        <p class="text-secondary small">Disponível + a receber - a pagar</p>
+                                        <p class="text-secondary small">Ativos - passivos</p>
                                     </div>
                                     <div class="rounded-3 bg-primary-subtle text-primary d-flex align-items-center justify-content-center" style="width: 48px; height: 48px;">
                                         <i class="bi bi-bank"></i>
                                     </div>
                                 </div>
-                                <div class="display-6 fw-bold" id="patrimonio-value">-</div>
+                                <div class="display-6 fw-bold">R$ {{ finance_indicators.net_worth|floatformat:2 }}</div>
                                 <hr>
                                 <div class="d-flex justify-content-between">
-                                    <span class="text-secondary">Disponível</span>
-                                    <strong class="text-success" id="disponivel-value">-</strong>
+                                    <span class="text-secondary">Ativos financeiros</span>
+                                    <strong class="text-success">R$ {{ finance_indicators.assets_value|floatformat:2 }}</strong>
                                 </div>
                                 <div class="d-flex justify-content-between mt-2">
                                     <span class="text-secondary">A receber</span>
-                                    <strong class="text-primary" id="areceber-value">-</strong>
+                                    <strong class="text-primary">R$ {{ finance_indicators.pending_receives|floatformat:2 }}</strong>
                                 </div>
                                 <div class="d-flex justify-content-between mt-2">
                                     <span class="text-secondary">A pagar</span>
-                                    <strong class="text-danger" id="apagar-value">-</strong>
+                                    <strong class="text-danger">R$ {{ finance_indicators.pending_pays|floatformat:2 }}</strong>
                                 </div>
+                            </div>
+                        </div>
+
+                    </div>
+
+                    <div class="row g-4 mt-1">
+
+                        <div class="col-12 col-lg-6">
+                            <div class="border rounded-3 p-3 h-100">
+                                <div class="d-flex justify-content-between">
+                                    <div>
+                                        <h5 class="fw-bold">Liquidez disponível</h5>
+                                        <p class="text-secondary small">Recursos de acesso imediato</p>
+                                    </div>
+                                    <div class="rounded-3 bg-info-subtle text-info d-flex align-items-center justify-content-center" style="width: 48px; height: 48px;">
+                                        <i class="bi bi-cash-stack"></i>
+                                    </div>
+                                </div>
+                                <div class="display-6 fw-bold">R$ {{ finance_indicators.liquidity_value|floatformat:2 }}</div>
                             </div>
                         </div>
 
@@ -160,10 +252,6 @@
                 </div>
             </div>
 
-            {{ finance_accounts_balance.balance_total|json_script:"balance-total-data" }}
-            {{ finance_method.expenses_essentials|json_script:"essential-expense-data" }}
-            {{ finance_pendents.incomes_due|json_script:"incomes-due-data" }}
-            {{ finance_pendents.expenses_due|json_script:"expenses-due-data" }}
         </div>
     </div>
 </div>
@@ -350,26 +438,61 @@
     }
 
     // ---------------------------------------------------------
-    // Reserva de emergência e Patrimônio líquido
+    // Fixas × Variáveis
     // ---------------------------------------------------------
 
-    var balanceTotal = parseFloat(JSON.parse(
-        document.getElementById("balance-total-data").textContent));
-    var essentialExpense = parseFloat(JSON.parse(
-        document.getElementById("essential-expense-data").textContent));
-    var incomesDue = parseFloat(JSON.parse(
-        document.getElementById("incomes-due-data").textContent));
-    var expensesDue = parseFloat(JSON.parse(
-        document.getElementById("expenses-due-data").textContent));
+    var fixedVarDoughnut = document.getElementById("fixed-variable");
+    if (fixedVarDoughnut) {
+        var fixTotal = JSON.parse('{{ data_fixed|safe }}')
+            .reduce(function(a, b) { return a + b; }, 0);
+        var varTotal = JSON.parse('{{ data_variable|safe }}')
+            .reduce(function(a, b) { return a + b; }, 0);
+        var totalST = fixTotal + varTotal;
 
-    var monthsReserve = essentialExpense > 0 ? balanceTotal / essentialExpense : 0;
-    document.getElementById("reserve-months").textContent = monthsReserve.toFixed(1).replace('.', ',');
-    document.getElementById("reserve-bar").style.width = Math.min((monthsReserve / 6) * 100, 100) + '%';
+        new Chart(fixedVarDoughnut, {
+            type: 'doughnut',
+            data: {
+                labels: ['Fixas', 'Variáveis'],
+                datasets: [{
+                    data: [fixTotal, varTotal],
+                    backgroundColor: ['rgb(255, 159, 64)', 'rgb(54, 162, 235)'],
+                    borderWidth: 0
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                cutout: '72%',
+                plugins: {
+                    legend: { position: 'bottom' },
+                    tooltip: {
+                        callbacks: {
+                            label: function(context) {
+                                var pct = totalST > 0
+                                    ? (context.raw / totalST * 100).toFixed(1).replace('.', ',')
+                                    : '0,0';
+                                return context.label + ': ' + formatCurrency(context.raw) + ' (' + pct + '%)';
+                            }
+                        }
+                    }
+                }
+            }
+        });
 
-    document.getElementById("patrimonio-value").textContent = formatCurrency(balanceTotal + incomesDue - expensesDue);
-    document.getElementById("disponivel-value").textContent = formatCurrency(balanceTotal);
-    document.getElementById("areceber-value").textContent = formatCurrency(incomesDue);
-    document.getElementById("apagar-value").textContent = formatCurrency(expensesDue);
+        document.getElementById("fix-value").textContent = formatCurrency(fixTotal);
+        document.getElementById("var-value").textContent = formatCurrency(varTotal);
+        document.getElementById("fix-pct").textContent = totalST > 0
+            ? (fixTotal / totalST * 100).toFixed(1).replace('.', ',') + '%'
+            : '0,0%';
+        document.getElementById("var-pct").textContent = totalST > 0
+            ? (varTotal / totalST * 100).toFixed(1).replace('.', ',') + '%'
+            : '0,0%';
+    }
+
+    // ---------------------------------------------------------
+    // Reserva de emergência e Patrimônio líquido
+    // (valores calculados server-side)
+    // ---------------------------------------------------------
 
     var ctx3 = document.getElementById("expenses-incomes-year");
     if (ctx3) {

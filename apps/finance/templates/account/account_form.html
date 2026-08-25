@@ -43,6 +43,8 @@ PyOrganiza - {% if account %}Alteração de {% else %}Nova {% endif %} Conta
                             <div class="col-md-6">{{ form.opening_balance|as_crispy_field }}</div>
                             <div class="col-md-12">{{ form.logo|as_crispy_field }}</div>
                             <div class="col-md-3">{{ form.active|as_crispy_field }}</div>
+                            <div class="col-md-4">{{ form.include_in_emergency_reserve|as_crispy_field }}</div>
+                            <div class="col-md-4">{{ form.include_in_liquidity|as_crispy_field }}</div>
                         </div>
                         <hr class="my-4 opacity-25">
                         <div class="row g-3 justify-content-end">

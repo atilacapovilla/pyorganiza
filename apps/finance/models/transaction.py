@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import date
 
 from django.conf import settings
 from django.db import models
@@ -13,10 +13,10 @@ class Transaction(models.Model):
         ("D", "Debito"),
     )
     transaction_date = models.DateField(
-        default=datetime.now, verbose_name="Data da Transação"
+        default=date.today, verbose_name="Data da Transação"
     )
     due_date = models.DateField(
-        default=datetime.now, verbose_name="Data de Vencimento")
+        default=date.today, verbose_name="Data de Vencimento")
     is_paid = models.BooleanField(
         default=False, verbose_name="Pago ou Recebido")
     account = models.ForeignKey(

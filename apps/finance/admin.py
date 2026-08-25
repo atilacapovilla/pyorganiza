@@ -13,12 +13,22 @@ class CategoryAdmin(admin.ModelAdmin):
         "name",
         "parent",
         "color",
+        "category_type",
+        "spending_type",
     )
+    list_filter = ("category_type", "spending_type")
 
 
 @admin.register(Account)
 class AccountAdmin(admin.ModelAdmin):
-    list_display = ("name", "type", "opening_balance", "account_current_balance")
+    list_display = (
+        "name", "type", "opening_balance", "account_current_balance",
+        "include_in_emergency_reserve", "include_in_liquidity",
+    )
+    list_filter = ("type", "include_in_emergency_reserve", "include_in_liquidity")
+
+    def get_queryset(self, request):
+        return super().get_queryset(request).with_current_balance()
 
     @admin.display(description="Saldo Atual")
     def account_current_balance(self, obj):
