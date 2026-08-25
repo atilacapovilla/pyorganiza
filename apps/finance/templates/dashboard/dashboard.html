@@ -57,25 +57,10 @@
                 </div>
                 <div class="card-body">
 
-                    <!-- Despesas por categoria + Essenciais x Supérfluas -->
+                    <!-- Essenciais x Supérfluas + Fixas x Variáveis -->
                     <div class="row g-4 mb-4">
 
-                        <div class="col-12 col-xl-7">
-                            <div class="border rounded-3 p-3 h-100">
-                                <h5 class="fw-bold mb-1">Despesas por categoria</h5>
-                                <p class="text-secondary small">Distribuição das despesas no mês</p>
-                                <div class="row align-items-center">
-                                    <div class="col-md-6">
-                                        <div style="position: relative; height: 260px;">
-                                            <canvas id="expenses-by-category"></canvas>
-                                        </div>
-                                    </div>
-                                    <div class="col-md-6" id="category-list"></div>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div class="col-12 col-xl-5">
+                        <div class="col-12 col-md-6">
                             <div class="border rounded-3 p-3 h-100">
                                 <h5 class="fw-bold">Essenciais × Supérfluas</h5>
                                 <p class="text-secondary small">Necessidade dos seus gastos</p>
@@ -97,12 +82,34 @@
                             </div>
                         </div>
 
+                        <div class="col-12 col-md-6">
+                            <div class="border rounded-3 p-3 h-100">
+                                <h5 class="fw-bold mb-1">Fixas × Variáveis</h5>
+                                <p class="text-secondary small">Composição dos gastos do mês</p>
+                                <div style="position: relative; height: 260px;">
+                                    <canvas id="fixed-variable"></canvas>
+                                </div>
+                                <div class="row text-center mt-3">
+                                    <div class="col">
+                                        <div class="text-secondary small">Fixas</div>
+                                        <strong id="fix-value">-</strong>
+                                        <div class="text-secondary small" id="fix-pct">-</div>
+                                    </div>
+                                    <div class="col">
+                                        <div class="text-secondary small">Variáveis</div>
+                                        <strong id="var-value">-</strong>
+                                        <div class="text-secondary small" id="var-pct">-</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
                     </div>
 
                     <!-- Despesas essenciais (base da reserva) -->
                     <div class="row g-4 mb-4">
 
-                        <div class="col-12 col-xl-6">
+                        <div class="col-12">
                             <div class="border rounded-3 p-3 h-100">
                                 <h5 class="fw-bold mb-1">Despesas essenciais</h5>
                                 <p class="text-secondary small">Base para cálculo da reserva de emergência</p>
@@ -137,28 +144,6 @@
                                             </tr>
                                         </tfoot>
                                     </table>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div class="col-12 col-xl-6">
-                            <div class="border rounded-3 p-3 h-100">
-                                <h5 class="fw-bold mb-1">Fixas × Variáveis</h5>
-                                <p class="text-secondary small">Composição dos gastos do mês</p>
-                                <div style="position: relative; height: 260px;">
-                                    <canvas id="fixed-variable"></canvas>
-                                </div>
-                                <div class="row text-center mt-3">
-                                    <div class="col">
-                                        <div class="text-secondary small">Fixas</div>
-                                        <strong id="fix-value">-</strong>
-                                        <div class="text-secondary small" id="fix-pct">-</div>
-                                    </div>
-                                    <div class="col">
-                                        <div class="text-secondary small">Variáveis</div>
-                                        <strong id="var-value">-</strong>
-                                        <div class="text-secondary small" id="var-pct">-</div>
-                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -323,66 +308,6 @@
             style: 'currency',
             currency: 'BRL'
         });
-    }
-
-    // ---------------------------------------------------------
-    // Despesas por categoria (essenciais + não essenciais)
-    // ---------------------------------------------------------
-
-    var categoryCtx = document.getElementById("expenses-by-category");
-    if (categoryCtx) {
-        var labels_all = JSON.parse('{{ labels_essential|safe }}')
-            .concat(JSON.parse('{{ labels_non_essential|safe }}'));
-        var data_all = JSON.parse('{{ data_essential|safe }}')
-            .concat(JSON.parse('{{ data_non_essential|safe }}'));
-        var colors_all = JSON.parse('{{ colors_essential|safe }}')
-            .concat(JSON.parse('{{ colors_non_essential|safe }}'));
-
-        new Chart(categoryCtx, {
-            type: 'doughnut',
-            data: {
-                labels: labels_all,
-                datasets: [{
-                    data: data_all,
-                    backgroundColor: colors_all,
-                    borderWidth: 0
-                }]
-            },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                cutout: '70%',
-                plugins: {
-                    legend: { position: 'bottom' },
-                    tooltip: {
-                        callbacks: {
-                            label: function(context) {
-                                return context.label + ': ' + formatCurrency(context.raw);
-                            }
-                        }
-                    }
-                }
-            }
-        });
-
-        var categoryList = document.getElementById("category-list");
-        if (categoryList) {
-            var listHtml = labels_all.map(function(label, i) {
-                return '<div class="d-flex justify-content-between border-bottom py-2">' +
-                        '<span>' +
-                            '<span class="d-inline-block rounded-circle me-1" ' +
-                            'style="width:10px;height:10px;background-color:' + (colors_all[i] || '#ccc') + ';"></span>' +
-                            label +
-                        '</span>' +
-                        '<strong>' + formatCurrency(data_all[i]) + '</strong>' +
-                    '</div>';
-            }).join('');
-            if (listHtml) {
-                categoryList.innerHTML = listHtml;
-            } else {
-                categoryList.innerHTML = '<p class="text-secondary small mt-2">Sem despesas no mês.</p>';
-            }
-        }
     }
 
     // ---------------------------------------------------------

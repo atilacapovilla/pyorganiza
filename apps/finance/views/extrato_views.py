@@ -53,30 +53,46 @@ def _get_extrato_data(user, start_date, end_date, account_id, status, today):
     else:
         status_label = "Todas"
 
-    total_creditos = transactions.filter(type="C").aggregate(
+    paid_transactions = transactions.filter(is_paid=True)
+
+    total_creditos = paid_transactions.filter(type="C").aggregate(
         total=Sum("transaction_value")
     )["total"] or 0
-    total_debitos = transactions.filter(type="D").aggregate(
+    total_debitos = paid_transactions.filter(type="D").aggregate(
         total=Sum("transaction_value")
     )["total"] or 0
 
-    running_balance = 0
+    if account_id:
+        account = get_object_or_404(Account, pk=account_id, user=user)
+        opening_balance = account.opening_balance
+    else:
+        opening_balance = sum(
+            Account.objects.filter(user=user).values_list("opening_balance", flat=True)
+        )
+
+    running_balance = opening_balance
     extrato_rows = []
     for t in transactions:
-        if t.type == "C":
-            running_balance += t.transaction_value
+        if t.is_paid:
+            if t.type == "C":
+                running_balance += t.transaction_value
+            else:
+                running_balance -= t.transaction_value
+            extrato_rows.append({
+                "transaction": t,
+                "running_balance": running_balance,
+            })
         else:
-            running_balance -= t.transaction_value
-        extrato_rows.append({
-            "transaction": t,
-            "running_balance": running_balance,
-        })
+            extrato_rows.append({
+                "transaction": t,
+                "running_balance": None,
+            })
 
     return {
         "extrato_rows": extrato_rows,
         "total_creditos": total_creditos,
         "total_debitos": total_debitos,
-        "saldo_final": total_creditos - total_debitos,
+        "saldo_final": opening_balance + total_creditos - total_debitos,
         "status_label": status_label,
     }
 

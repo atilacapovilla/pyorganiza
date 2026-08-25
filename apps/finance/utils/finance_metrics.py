@@ -12,6 +12,7 @@ def _get_month_totals(request, month, year):
         user=request.user,
         transaction_date__year=year,
         transaction_date__month=month,
+        is_paid=True,
     ).exclude(category__category_type="transitoria")
 
     expenses = (
@@ -176,6 +177,7 @@ def get_finance_method(request, month=None, year=None):
         user=request.user,
         transaction_date__year=year,
         transaction_date__month=month,
+        is_paid=True,
     ).exclude(category__category_type="transitoria")
 
     total_incomes = float(
@@ -251,6 +253,7 @@ def _essential_expenses_breakdown(user, reference_date):
                 transaction_date__month=month,
                 category__category_type="despesa",
                 category__essential=True,
+                is_paid=True,
             ).aggregate(Sum("transaction_value"))["transaction_value__sum"]
             or Decimal("0")
         )

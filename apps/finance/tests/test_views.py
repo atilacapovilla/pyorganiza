@@ -59,7 +59,7 @@ class ExtratoTests(BaseFinanceTestCase):
 
         rows = response.context["extrato_rows"]
         self.assertEqual(len(rows), 2)
-        self.assertEqual(response.context["saldo_final"], Decimal("850.00"))
+        self.assertEqual(response.context["saldo_final"], Decimal("950.00"))
 
     def test_status_filter_vencidos(self):
         self._create_transaction(

@@ -41,6 +41,7 @@ def _get_period_totals(user, month, year):
             user=user,
             transaction_date__month=month,
             transaction_date__year=year,
+            is_paid=True,
         )
         .exclude(category__category_type="transitoria")
         .values("category")

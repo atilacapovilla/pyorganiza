@@ -20,6 +20,7 @@ def get_finance_expense_month(request, month, year):
             category__category_type="despesa",
             transaction_date__year=year,
             transaction_date__month=month,
+            is_paid=True,
         )
         .order_by("-total_expenses")
     )
@@ -65,7 +66,7 @@ def get_finance_incomes_expense_year(request, year):
     data_incomes_year = [0] * 12
 
     monthly_totals = (
-        Transaction.objects.filter(user=request.user, transaction_date__year=year)
+        Transaction.objects.filter(user=request.user, transaction_date__year=year, is_paid=True)
         .exclude(category__category_type="transitoria")
         .annotate(month=TruncMonth("transaction_date"))
         .values("month")
@@ -107,6 +108,7 @@ def get_finance_expense_spending_type(request, month, year):
             category__category_type="despesa",
             transaction_date__year=year,
             transaction_date__month=month,
+            is_paid=True,
         )
         .order_by("-total_expenses")
     )

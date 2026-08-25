@@ -22,12 +22,12 @@ class BalanceteTests(BaseFinanceTestCase):
         food = self.expense_category
 
         self._create_transaction(
-            value="300.00", type="D", category=food,
+            value="300.00", type="D", category=food, is_paid=True,
             description="Mercado",
         )
         # transação fora do mês consultado não deve entrar
         self._create_transaction(
-            value="500.00", type="D", category=food,
+            value="500.00", type="D", category=food, is_paid=True,
             description="Mês passado",
         )
         from apps.finance.models.transaction import Transaction
@@ -46,7 +46,7 @@ class BalanceteTests(BaseFinanceTestCase):
         self.assertEqual(response.context["saldo_curr"], -300.0)
 
     def test_january_rolls_back_to_december_previous_year(self):
-        self._create_transaction(value="100.00", type="D")
+        self._create_transaction(value="100.00", type="D", is_paid=True)
         from apps.finance.models.transaction import Transaction
 
         Transaction.objects.all().update(transaction_date=date(2025, 12, 20))
@@ -63,11 +63,11 @@ class BalanceteTests(BaseFinanceTestCase):
         child = self._create_category("Aluguel", "despesa", parent=parent)
 
         self._create_transaction(
-            value="1200.00", type="D", category=child,
+            value="1200.00", type="D", category=child, is_paid=True,
             description="Aluguel agosto",
         )
         self._create_transaction(
-            value="100.00", type="D", category=self.expense_category,
+            value="100.00", type="D", category=self.expense_category, is_paid=True,
             description="Outra despesa",
         )
 
@@ -84,7 +84,7 @@ class BalanceteTests(BaseFinanceTestCase):
         self.assertEqual(response.context["selected_month"], today.month)
 
     def test_balancete_pdf_returns_pdf(self):
-        self._create_transaction(value="50.00", type="D")
+        self._create_transaction(value="50.00", type="D", is_paid=True)
 
         response = self.client.get(
             reverse("balancete-pdf"), {"month": 8, "year": 2026}

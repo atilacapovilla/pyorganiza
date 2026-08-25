@@ -115,9 +115,13 @@
                                     <td class="text-end"></td>
                                     <td class="text-end text-success fw-semibold">{{ row.transaction.transaction_value|floatformat:2 }}</td>
                                     {% endif %}
+                                    {% if row.running_balance is not None %}
                                     <td class="text-end fw-bold {% if row.running_balance < 0 %}text-danger{% else %}text-success{% endif %}">
                                         {{ row.running_balance|floatformat:2 }}
                                     </td>
+                                    {% else %}
+                                    <td class="text-end text-muted">-</td>
+                                    {% endif %}
                                 </tr>
                                 {% endfor %}
                             </tbody>
