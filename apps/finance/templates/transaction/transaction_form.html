@@ -53,7 +53,7 @@ PyOrganiza - {% if transaction %}Alteração de {% else %}Nova {% endif %} Trans
         color: var(--text-primary);
         border-color: var(--border-color);
     }
-    [data-theme="dark"] .select2-dropdown {
+    [data-theme="dark"] .select2-container--default .select2-dropdown {
         background-color: var(--bg-primary);
         border-color: var(--border-color);
     }
@@ -64,6 +64,17 @@ PyOrganiza - {% if transaction %}Alteração de {% else %}Nova {% endif %} Trans
         background-color: var(--active-bg);
         color: var(--text-primary);
     }
+
+    #installment-section { display: none; }
+    #installment-section.active { display: block; }
+    .installment-preview {
+        {% comment %} background: var(--bs-tertiary-bg, #f8f9fa); {% endcomment %}
+        border: 1px dashed var(--bs-border-color, #dee2e6);
+        border-radius: 0.5rem;
+        padding: 0.75rem 1rem;
+        font-size: 0.875rem;
+    }
+    .form-check-input:checked + .form-check-label { font-weight: 600; }
 </style>
 {% endblock extra_css %}
 
@@ -110,6 +121,34 @@ PyOrganiza - {% if transaction %}Alteração de {% else %}Nova {% endif %} Trans
                             <div class="col-md-4">{{ form.is_paid|as_crispy_field }}</div>
                             <div class="col-md-12">{{ form.description|as_crispy_field }}</div>
                         </div>
+
+                    <!-- Lançamentos Futuros -->
+                    <div id="installment-section" class="mt-4 p-3 border rounded-3">
+                        <h6 class="fw-bold mb-3">
+                            <i class="bi bi-layers me-1"></i> Lançamentos Futuros
+                        </h6>
+                            <div class="row g-3">
+                                <div class="col-md-3">
+                                    {{ form.installment_count|as_crispy_field }}
+                                </div>
+                                <div class="col-md-3">
+                                    {{ form.first_due_date|as_crispy_field }}
+                                </div>
+                                <div class="col-md-3">
+                                    {{ form.installment_mode|as_crispy_field }}
+                                </div>
+                                <div class="col-md-3">
+                                    {{ form.date_behavior|as_crispy_field }}
+                                </div>
+                                <div class="col-md-12">
+                                    <div id="installment-preview" class="installment-preview d-none">
+                                        <i class="bi bi-info-circle me-1"></i>
+                                        <span id="installment-preview-text"></span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
                         <hr class="my-4 opacity-25">
                         <div class="row g-3 justify-content-end">
                             <div class="col-md-3 col-lg-2">
@@ -139,6 +178,8 @@ PyOrganiza - {% if transaction %}Alteração de {% else %}Nova {% endif %} Trans
 <script src="{% static 'js/jquery.js' %}"></script>
 <script src="{% static 'js/select2/select2.min.js' %}"></script>
 <script>
+    var accountTypes = {{ account_types|safe }};
+
     $(document).ready(function () {
         $('#id_category').select2({
             placeholder: "Pesquise ou selecione uma categoria...",
@@ -148,6 +189,60 @@ PyOrganiza - {% if transaction %}Alteração de {% else %}Nova {% endif %} Trans
                 noResults: function () { return "Nenhuma categoria encontrada"; }
             }
         });
+
+        var $account = $('#id_account');
+        var $installmentSection = $('#installment-section');
+        var $installmentCount = $('#id_installment_count');
+        var $firstDueDate = $('#id_first_due_date');
+        var $valueField = $('#id_transaction_value');
+        var $preview = $('#installment-preview');
+        var $previewText = $('#installment-preview-text');
+
+        $('#id_account option').each(function () {
+            var val = $(this).val();
+            if (val && accountTypes[val]) {
+                $(this).attr('data-type', accountTypes[val]);
+            }
+        });
+
+        function toggleInstallment() {
+            $installmentSection.addClass('active');
+        }
+
+        function updatePreview() {
+            var count = parseInt($installmentCount.val());
+            var value = parseFloat($valueField.val().replace(',', '.'));
+            var mode = $('input[name="installment_mode"]:checked').val() || 'divide';
+
+            if (!count || count < 2 || isNaN(value)) {
+                $preview.addClass('d-none');
+                return;
+            }
+
+            var perInstallment;
+            if (mode === 'divide') {
+                perInstallment = value / count;
+            } else {
+                perInstallment = value;
+            }
+
+            var total = mode === 'divide' ? value : value * count;
+            $previewText.textContent = count + 'x de R$ ' + perInstallment.toFixed(2).replace('.', ',') +
+                ' (Total: R$ ' + total.toFixed(2).replace('.', ',') + ')';
+            $preview.removeClass('d-none');
+        }
+
+        $account.on('change', function () {
+            toggleInstallment();
+            updatePreview();
+        });
+
+        $installmentCount.on('input', updatePreview);
+        $valueField.on('input', updatePreview);
+        $('input[name="installment_mode"]').on('change', updatePreview);
+
+        toggleInstallment();
+        updatePreview();
     });
 </script>
 {% endblock extra_js %}

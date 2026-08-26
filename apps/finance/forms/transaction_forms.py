@@ -35,6 +35,17 @@ class HierarchicalCategoryByTypeField(HierarchicalCategoryField):
     iterator = CategoryByTypeIterator
 
 
+INSTALLMENT_MODE_CHOICES = (
+    ("divide", "Dividir valor total"),
+    ("repeat", "Repetir valor por lançamento"),
+)
+
+DATE_BEHAVIOR_CHOICES = (
+    ("keep", "Manter data da compra original"),
+    ("increment", "Incrementar data da compra"),
+)
+
+
 class TransactionForm(forms.ModelForm):
 
     def __init__(self, *args, **kwargs):
@@ -58,7 +69,35 @@ class TransactionForm(forms.ModelForm):
     due_date = forms.DateField(
         widget=forms.TextInput(attrs={"type": "date"}), label="Data de Vencimento"
     )
+    installment_count = forms.IntegerField(
+        required=False,
+        min_value=2,
+        max_value=48,
+        widget=forms.NumberInput(attrs={"min": "2", "max": "48", "placeholder": "Ex: 12"}),
+        label="Nº de Lançamentos",
+    )
 
+    first_due_date = forms.DateField(
+        required=False,
+        widget=forms.TextInput(attrs={"type": "date"}),
+        label="1º Vencimento",
+    )
+
+    installment_mode = forms.ChoiceField(
+        required=False,
+        choices=INSTALLMENT_MODE_CHOICES,
+        initial="divide",
+        label="Como dividir?",
+        widget=forms.RadioSelect,
+    )
+
+    date_behavior = forms.ChoiceField(
+        required=False,
+        choices=DATE_BEHAVIOR_CHOICES,
+        initial="keep",
+        label="Data da compra nas parcelas",
+        widget=forms.RadioSelect,
+    )
     class Meta:
         model = Transaction
         fields = [

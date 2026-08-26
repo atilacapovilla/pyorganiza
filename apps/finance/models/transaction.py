@@ -1,4 +1,5 @@
 from datetime import date
+from uuid import uuid4
 
 from django.conf import settings
 from django.db import models
@@ -44,6 +45,19 @@ class Transaction(models.Model):
     updated_at = models.DateTimeField(
         auto_now=True, verbose_name="Alterado em")
     active = models.BooleanField("Transação Ativa", default=True)
+
+    installment_group = models.UUIDField(
+        null=True, blank=True, db_index=True,
+        verbose_name="Grupo de Parcelas",
+    )
+    installment_number = models.PositiveSmallIntegerField(
+        null=True, blank=True,
+        verbose_name="Nº da Parcela",
+    )
+    total_installments = models.PositiveSmallIntegerField(
+        null=True, blank=True,
+        verbose_name="Total de Parcelas",
+    )
 
     def __str__(self):
         return f"{self.description} - {self.transaction_date} - {self.due_date} - {self.transaction_value}"

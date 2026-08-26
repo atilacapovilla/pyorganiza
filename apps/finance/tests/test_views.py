@@ -4,6 +4,7 @@ from decimal import Decimal
 from django.urls import reverse
 
 from apps.finance.forms.category_forms import CategoryForm
+from apps.finance.models.transaction import Transaction
 from apps.finance.tests.base import BaseFinanceTestCase
 
 
@@ -101,3 +102,166 @@ class DashboardTests(BaseFinanceTestCase):
 
         response = self.client.get(reverse("dashboard"))
         self.assertEqual(response.status_code, 200)
+
+
+class InstallmentTests(BaseFinanceTestCase):
+    def setUp(self):
+        super().setUp()
+        self.credit_account = self._create_account(
+            name="Cartão Nubank", type="CT",
+        )
+
+    def _post_create(self, **kwargs):
+        data = {
+            "transaction_date": "2026-08-25",
+            "due_date": "2026-09-10",
+            "account": self.credit_account.pk,
+            "category": self.child_expense_category.pk,
+            "description": "Compra TV",
+            "transaction_value": "1200.00",
+            "type": "D",
+        }
+        data.update(kwargs)
+        return self.client.post(reverse("transaction-create"), data)
+
+    def test_divide_creates_correct_number_of_installments(self):
+        response = self._post_create(
+            installment_count="3",
+            first_due_date="2026-09-10",
+            installment_mode="divide",
+        )
+        self.assertEqual(response.status_code, 302)
+        txns = Transaction.objects.filter(
+            user=self.user, account=self.credit_account,
+        ).order_by("installment_number")
+        self.assertEqual(txns.count(), 3)
+
+    def test_divide_splits_value_equally(self):
+        self._post_create(
+            installment_count="3",
+            first_due_date="2026-09-10",
+            installment_mode="divide",
+        )
+        txns = Transaction.objects.filter(
+            user=self.user, account=self.credit_account,
+        ).order_by("installment_number")
+        values = [t.transaction_value for t in txns]
+        self.assertEqual(values[0], Decimal("400.00"))
+        self.assertEqual(values[1], Decimal("400.00"))
+        self.assertEqual(values[2], Decimal("400.00"))
+        self.assertEqual(sum(values), Decimal("1200.00"))
+
+    def test_divide_handles_remainder(self):
+        self._post_create(
+            installment_count="3",
+            first_due_date="2026-09-10",
+            installment_mode="divide",
+            transaction_value="1000.00",
+        )
+        txns = Transaction.objects.filter(
+            user=self.user, account=self.credit_account,
+        ).order_by("installment_number")
+        values = [t.transaction_value for t in txns]
+        self.assertEqual(values[0], Decimal("333.33"))
+        self.assertEqual(values[1], Decimal("333.33"))
+        self.assertEqual(values[2], Decimal("333.34"))
+        self.assertEqual(sum(values), Decimal("1000.00"))
+
+    def test_repeat_keeps_same_value(self):
+        self._post_create(
+            installment_count="12",
+            first_due_date="2026-09-10",
+            installment_mode="repeat",
+            transaction_value="100.00",
+        )
+        txns = Transaction.objects.filter(
+            user=self.user, account=self.credit_account,
+        ).order_by("installment_number")
+        self.assertEqual(txns.count(), 12)
+        for t in txns:
+            self.assertEqual(t.transaction_value, Decimal("100.00"))
+
+    def test_only_first_installment_is_paid(self):
+        self._post_create(
+            installment_count="3",
+            first_due_date="2026-09-10",
+            installment_mode="divide",
+            is_paid="on",
+        )
+        txns = Transaction.objects.filter(
+            user=self.user, account=self.credit_account,
+        ).order_by("installment_number")
+        self.assertTrue(txns[0].is_paid)
+        self.assertFalse(txns[1].is_paid)
+        self.assertFalse(txns[2].is_paid)
+
+    def test_due_dates_are_monthly(self):
+        self._post_create(
+            installment_count="4",
+            first_due_date="2026-09-10",
+            installment_mode="divide",
+        )
+        txns = Transaction.objects.filter(
+            user=self.user, account=self.credit_account,
+        ).order_by("installment_number")
+        self.assertEqual(txns[0].due_date, date(2026, 9, 10))
+        self.assertEqual(txns[1].due_date, date(2026, 10, 10))
+        self.assertEqual(txns[2].due_date, date(2026, 11, 10))
+        self.assertEqual(txns[3].due_date, date(2026, 12, 10))
+
+    def test_descriptions_include_installment_number(self):
+        self._post_create(
+            installment_count="3",
+            first_due_date="2026-09-10",
+            installment_mode="divide",
+        )
+        txns = Transaction.objects.filter(
+            user=self.user, account=self.credit_account,
+        ).order_by("installment_number")
+        self.assertEqual(txns[0].description, "Compra TV (1/3)")
+        self.assertEqual(txns[1].description, "Compra TV (2/3)")
+        self.assertEqual(txns[2].description, "Compra TV (3/3)")
+
+    def test_all_installments_share_same_group(self):
+        self._post_create(
+            installment_count="3",
+            first_due_date="2026-09-10",
+            installment_mode="divide",
+        )
+        txns = Transaction.objects.filter(
+            user=self.user, account=self.credit_account,
+        )
+        groups = set(t.installment_group for t in txns)
+        self.assertEqual(len(groups), 1)
+        for t in txns:
+            self.assertEqual(t.installment_number is not None, True)
+            self.assertEqual(t.total_installments, 3)
+
+    def test_no_installment_fields_creates_single_transaction(self):
+        response = self._post_create()
+        self.assertEqual(response.status_code, 302)
+        txns = Transaction.objects.filter(
+            user=self.user, account=self.credit_account,
+        )
+        self.assertEqual(txns.count(), 1)
+        self.assertIsNone(txns[0].installment_group)
+
+    def test_delete_removes_all_installments(self):
+        self._post_create(
+            installment_count="3",
+            first_due_date="2026-09-10",
+            installment_mode="divide",
+        )
+        group = Transaction.objects.filter(
+            user=self.user, account=self.credit_account,
+        ).first().installment_group
+
+        first = Transaction.objects.filter(
+            installment_group=group, installment_number=1,
+        ).first()
+        self.client.post(
+            reverse("transaction-delete", args=[first.pk]),
+        )
+        self.assertEqual(
+            Transaction.objects.filter(installment_group=group).count(), 0
+        )
