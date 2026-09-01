@@ -50,31 +50,60 @@
             <div class="card-header">Saldo em outras contas</div>
             <div class="card-body">
                 <div class="table-responsive">
-                    {% if finance_accounts_balance.accounts_other %}
-                    <table class="table table-sm table-hover">
-                        <thead>
-                            <tr>
-                                <th scope="col">Conta</th>
-                                <th scope="col">Tipo</th>
-                                <th scope="col" class="text-end">Saldo</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {% for account in finance_accounts_balance.accounts_other %}
-                            <tr>
-                                <td>{{ account.name}}</td>
-                                <td>{{ account.get_type_display }}</td>
-                                {% if account.current_balance == 0 %}
-                                <td class="text-end">{{ account.current_balance | floatformat:2 }}</td>
-                                {% elif account.current_balance > 0 %}
-                                <td class="text-end text-success">{{ account.current_balance | floatformat:2}}</td>
-                                {% else %}
-                                <td class="text-end text-danger">{{ account.current_balance | floatformat:2 }}</td>
-                                {% endif %}
-                            </tr>
-                            {% endfor %}
-                        </tbody>
-                    </table>
+                    {% if finance_accounts_balance.cards_other or finance_accounts_balance.accounts_other %}
+                        {% if finance_accounts_balance.cards_other %}
+                        <h6 class="text-muted small fw-bold text-uppercase mb-2">Cartões de crédito (por vencimento)</h6>
+                        <table class="table table-sm table-hover">
+                            <thead>
+                                <tr>
+                                    <th scope="col">Vencimento</th>
+                                    <th scope="col" class="text-end">Total</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for card in finance_accounts_balance.cards_other %}
+                                <tr>
+                                    <td>{{ card.due_date | date:'d/m/Y'}}</td>
+                                    <td class="text-end text-danger">{{ card.total | floatformat:2 }}</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                            <tfoot>
+                                <tr class="fw-bold">
+                                    <td>Total em aberto</td>
+                                    <td class="text-end text-danger">{{ finance_accounts_balance.cards_balance_total | floatformat:2 }}</td>
+                                </tr>
+                            </tfoot>
+                        </table>
+                        {% endif %}
+
+                        {% if finance_accounts_balance.accounts_other %}
+                        <h6 class="text-muted small fw-bold text-uppercase mb-2 mt-3">Contas e investimentos</h6>
+                        <table class="table table-sm table-hover">
+                            <thead>
+                                <tr>
+                                    <th scope="col">Conta</th>
+                                    <th scope="col">Tipo</th>
+                                    <th scope="col" class="text-end">Saldo</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for account in finance_accounts_balance.accounts_other %}
+                                <tr>
+                                    <td>{{ account.name}}</td>
+                                    <td>{{ account.get_type_display }}</td>
+                                    {% if account.current_balance == 0 %}
+                                    <td class="text-end">{{ account.current_balance | floatformat:2 }}</td>
+                                    {% elif account.current_balance > 0 %}
+                                    <td class="text-end text-success">{{ account.current_balance | floatformat:2}}</td>
+                                    {% else %}
+                                    <td class="text-end text-danger">{{ account.current_balance | floatformat:2 }}</td>
+                                    {% endif %}
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                        {% endif %}
                     {% else %}
                     <p>Não existe conta cadastrada</p>
                     {% endif %}
@@ -202,16 +231,14 @@
                         <thead>
                             <tr>
                                 <th scope="col">Vencimento</th>
-                                <th scope="col">Conta</th>
-                                <th scope="col">Categoria</th>
-                                <th scope="col">Descrição</th>
-                                <th scope="col">Tipo</th>
-                                <th scope="col" class="text-end">Valor</th>
+                                <th scope="col" class="text-end">Débito</th>
+                                <th scope="col" class="text-end">Crédito</th>
+                                <th scope="col" class="text-end">Saldo</th>
                             </tr>
                         </thead>
                         <tbody>
                             <tr>
-                                <td colspan="5" class="fw-bold" >Saldo disponível atual</td>
+                                <td colspan="3" class="fw-bold">Saldo disponível atual</td>
                                 {% if finance_accounts_balance.balance_total == 0 %}
                                     <td class="text-end">{{ finance_accounts_balance.balance_total | floatformat:2 }}</td>
                                 {% elif finance_accounts_balance.balance_total > 0 %}
@@ -220,48 +247,16 @@
                                     <td class="text-end text-danger">{{ finance_accounts_balance.balance_total | floatformat:2 }}</td>
                                 {% endif %}
                             </tr>
-                            {% if finance_pendents.expenses_due %}
+                            {% for group in finance_pendents.cash_flow_groups %}
                             <tr>
-                                <td colspan="6" class="text-danger fw-bold">Despesas</td>
-                            </tr>
-                            {% endif %}
-                            {% for expense in finance_pendents.expenses_pendents%}
-                            <tr>
-                                <th scope="row">{{ expense.due_date | date:'d/m/Y'}}</th>
-                                <td>{{ expense.account}}</td>
-                                <td>{{ expense.category }}</td>
-                                <td>{{ expense.description | default_if_none:" "}}</td>
-                                <td>{{ expense.get_type_display }}</td>
-                                <td class="text-end fw-bold"> 
-                                    <span class="text-danger">{{ expense.transaction_value | floatformat:2 }}</span>
-                                </td>
-                            </tr>
-                            {% endfor %}
-                            {% if finance_pendents.incomes_due %}
-                            <tr>
-                                <td colspan="6" class="text-success fw-bold">Receitas</td>
-                            </tr>
-                            {% endif %}
-                            {% for income in finance_pendents.incomes_pendents %}
-                            <tr>
-                                <th scope="row">{{ income.due_date | date:'d/m/Y'}}</th>
-                                <td>{{ income.account }}</td>
-                                <td>{{ income.category }}</td>
-                                <td>{{ income.description | default_if_none:" "}}</td>
-                                <td>{{ income.get_type_display }}</td>
-                                <td class="text-end fw-bold">
-                                    <span class="text-success">{{ income.transaction_value  | floatformat:2 }}</span>
-                                </td>
+                                <td>{{ group.due_date | date:'d/m/Y'}}</td>
+                                <td class="text-end text-danger">{{ group.debit | floatformat:2 }}</td>
+                                <td class="text-end text-success">{{ group.credit | floatformat:2 }}</td>
+                                <td class="text-end {% if group.balance > 0 %} text-success {% elif group.balance < 0 %} text-danger {% endif %}">{{ group.balance | floatformat:2 }}</td>
                             </tr>
                             {% endfor %}
                         </tbody>
                     </table>
-                </div>
-                <div class="d-flex justify-content-between  fw-bold">
-                    <span>Saldo</span>
-                    <span class="{% if finance_pendents.balance_pendent > 0 %} text-success {% else %} text-danger {% endif %}">
-                        R$ {{ finance_pendents.balance_pendent | floatformat:2 }} 
-                    </span>
                 </div>
             </div>
         </div>

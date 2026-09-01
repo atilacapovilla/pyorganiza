@@ -118,49 +118,83 @@ def get_finance_accounts_balance(request):
 
     accounts_other = (
         Account.objects.filter(user=request.user)
-        .exclude(type__in=("CC", "DN"))
+        .exclude(type__in=("CC", "DN", "CT"))
         .order_by("type", "name")
         .with_current_balance()
+    )
+
+    cards_other = (
+        Transaction.objects.filter(
+            user=request.user,
+            account__type="CT",
+            type="D",
+            is_paid=False,
+        )
+        .values("due_date")
+        .annotate(total=Sum("transaction_value"))
+        .order_by("due_date")
+    )
+
+    cards_balance_total = sum(
+        (card_other.get("total") or 0) for card_other in cards_other
     )
 
     finance_accounts_balance = dict(
         accounts=accounts,
         accounts_other=accounts_other,
+        cards_other=cards_other,
+        cards_balance_total=cards_balance_total,
         balance_total=balance_total,
     )
     return finance_accounts_balance
 
 
 def get_finance_pendents(total_balance, request):
-    expenses_pendents = Transaction.objects.filter(
+    pendents = Transaction.objects.filter(
         user=request.user,
-        type="D",
-        is_paid=False,
-    ).order_by("due_date")
-
-    incomes_pendents = Transaction.objects.filter(
-        user=request.user,
-        type="C",
         is_paid=False,
     ).order_by("due_date")
 
     expenses_due = (
-        expenses_pendents.aggregate(Sum("transaction_value"))[
+        pendents.filter(type="D").aggregate(Sum("transaction_value"))[
             "transaction_value__sum"]
         or 0
     )
 
     incomes_due = (
-        incomes_pendents.aggregate(Sum("transaction_value"))[
+        pendents.filter(type="C").aggregate(Sum("transaction_value"))[
             "transaction_value__sum"]
         or 0
     )
 
     balance_pendent = total_balance + incomes_due - expenses_due
 
+    cash_flow_groups = []
+    for transaction in pendents:
+        if not cash_flow_groups or (
+            cash_flow_groups[-1]["due_date"] != transaction.due_date
+        ):
+            cash_flow_groups.append(
+                {
+                    "due_date": transaction.due_date,
+                    "debit": Decimal("0"),
+                    "credit": Decimal("0"),
+                }
+            )
+        group = cash_flow_groups[-1]
+        if transaction.type == "D":
+            group["debit"] += transaction.transaction_value
+        else:
+            group["credit"] += transaction.transaction_value
+
+    balance = Decimal(str(total_balance))
+    for group in cash_flow_groups:
+        balance += group["credit"] - group["debit"]
+        group["balance"] = balance
+
     finance_pendents = dict(
-        expenses_pendents=expenses_pendents,
-        incomes_pendents=incomes_pendents,
+        cash_flow_groups=cash_flow_groups,
+        cash_flow_initial=Decimal(str(total_balance)),
         expenses_due=expenses_due,
         incomes_due=incomes_due,
         balance_pendent=balance_pendent,
